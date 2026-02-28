@@ -94,11 +94,16 @@ export const level3_03: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    requiredCommands: ['stash', 'merge'],
     descriptions: {
       branches: { main: 'merged feature/maps + stashed changes committed' },
       remoteBranches: { main: 'pushed to remote' },
       head: 'on main',
       workingTree: 'stash popped and committed',
+      requiredCommands: {
+        stash: 'stash uncommitted work before merging',
+        merge: 'merge the feature branch',
+      },
     },
   },
 
@@ -107,6 +112,12 @@ export const level3_03: Scenario = {
       from: 'sarah',
       text: "I need you to merge feature/maps into main. But you've got uncommitted changes in your working tree — stash them first so the merge goes cleanly.",
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'sarah',
+      text: "you've got uncommitted changes in the working tree — merging now could get messy. stash your work first with git stash.",
+      trigger: { type: 'after_command_without', command: 'merge', without: 'stash' },
+      variant: 'warning',
     },
     {
       from: 'alex',

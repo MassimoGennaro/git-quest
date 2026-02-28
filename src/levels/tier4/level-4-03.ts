@@ -92,10 +92,14 @@ export const level4_03: Scenario = {
     branches: ['feature/leaderboard'],
     head: { type: 'branch', name: 'feature/leaderboard' },
     workingTreeClean: true,
+    requiredCommands: ['rebase'],
+    forbiddenCommands: ['merge'],
     descriptions: {
       branches: { 'feature/leaderboard': 'rebased onto main, conflict resolved' },
       head: 'on the feature branch',
       workingTree: 'rebase completed cleanly',
+      requiredCommands: { rebase: 'rebase onto main, not merge' },
+      forbiddenCommands: { merge: 'rebase produces linear history, not merge commits' },
     },
   },
 
@@ -104,6 +108,12 @@ export const level4_03: Scenario = {
       from: 'marcus',
       text: 'main has moved forward with an API endpoint update. rebase feature/leaderboard onto main before the PR. there will be a conflict in api.js — keep the v3 endpoint but preserve your leaderboard function.',
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'marcus',
+      text: "merge creates merge commits. we need linear history here. undo that and use rebase instead.",
+      trigger: { type: 'after_command', command: 'merge' },
+      variant: 'warning',
     },
     {
       from: 'sarah',

@@ -91,11 +91,16 @@ export const level4_05: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    requiredCommands: ['rebase', 'merge'],
     descriptions: {
       branches: { main: 'feature branch merged after squash' },
       remoteBranches: { main: 'pushed to remote' },
       head: 'on main',
       workingTree: 'all files committed',
+      requiredCommands: {
+        rebase: 'squash commits with interactive rebase',
+        merge: 'merge feature branch into main',
+      },
     },
   },
 
@@ -109,6 +114,12 @@ export const level4_05: Scenario = {
       from: 'sarah',
       text: 'start by creating a feature branch off main. something like feature/notifications.',
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'marcus',
+      text: "don't push yet — squash your commits with git rebase -i first, then merge to main.",
+      trigger: { type: 'after_command_without', command: 'push', without: 'rebase' },
+      variant: 'warning',
     },
     {
       from: 'alex',

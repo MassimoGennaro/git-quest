@@ -116,10 +116,12 @@ export const level4_01: Scenario = {
     branches: ['feature/user-profile'],
     head: { type: 'branch', name: 'feature/user-profile' },
     workingTreeClean: true,
+    requiredCommands: ['rebase'],
     descriptions: {
       branches: { 'feature/user-profile': 'WIP commits squashed into one clean commit' },
       head: 'on the feature branch',
       workingTree: 'no uncommitted changes',
+      requiredCommands: { rebase: 'squash commits with interactive rebase' },
     },
   },
 
@@ -128,6 +130,12 @@ export const level4_01: Scenario = {
       from: 'marcus',
       text: 'before you open the PR, squash those commits on feature/user-profile. 4 commits for one feature is noise. make it one clean commit.',
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'marcus',
+      text: "more commits? that's the opposite of cleanup. use git rebase -i to squash them down.",
+      trigger: { type: 'after_command_without', command: 'commit', without: 'rebase' },
+      variant: 'warning',
     },
     {
       from: 'marcus',

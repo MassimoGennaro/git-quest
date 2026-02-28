@@ -207,6 +207,8 @@ Adding a new level is one of the best ways to contribute. See [docs/LEVELS.md](d
 - **Target state uses `branches: string[]`** -- just branch names. Commit messages are NOT checked by the win condition.
 - **Slack messages use character personalities:** Alex (casual), Sarah (thorough), Marcus (terse).
 - **Starting states should feel lived-in** -- realistic branch names and commit histories.
+- **Use command constraints to prevent cheating.** If a level teaches a specific command (e.g., `cherry-pick`), add `requiredCommands` and/or `forbiddenCommands` to ensure the player uses the intended approach.
+- **Add warning Slack messages for constrained levels.** Players who use a forbidden or wrong approach should get an in-character nudge in the Slack panel.
 
 ### Level File Template
 
@@ -237,6 +239,13 @@ export const level: Scenario = {
     // remoteBranches: ['main'],  // optional
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    // requiredCommands: ['cherry-pick'],  // player MUST use these
+    // forbiddenCommands: ['merge'],       // player must NOT use these
+    // descriptions: {                     // shown in ghost overlay
+    //   branches: { main: 'cherry-picked fix applied' },
+    //   requiredCommands: { 'cherry-pick': 'apply a single commit' },
+    //   forbiddenCommands: { merge: 'do NOT merge the whole branch' },
+    // },
   },
 
   slackThread: [
@@ -245,6 +254,20 @@ export const level: Scenario = {
       trigger: { type: 'level_start' },
       text: 'hey! ...',
     },
+    // Warning when player uses wrong approach (forbidden command):
+    // {
+    //   from: 'sarah',
+    //   trigger: { type: 'after_command', command: 'merge' },
+    //   text: 'hold on — you merged the whole branch...',
+    //   variant: 'warning',
+    // },
+    // Warning when player goes off-track (missing required command):
+    // {
+    //   from: 'sarah',
+    //   trigger: { type: 'after_command_without', command: 'add', without: 'stash' },
+    //   text: 'you should stash first...',
+    //   variant: 'warning',
+    // },
   ],
 
   hints: [
@@ -253,6 +276,49 @@ export const level: Scenario = {
   ],
 };
 ```
+
+### Command Constraints
+
+Levels that teach a specific git command should use `requiredCommands` and/or `forbiddenCommands` in `targetState` to prevent players from bypassing the intended approach:
+
+- **`requiredCommands: string[]`** — Git subcommand names that MUST appear in the player's command history to win. Example: `['cherry-pick']` requires the player to have used `git cherry-pick` at least once.
+- **`forbiddenCommands: string[]`** — Git subcommand names that must NOT appear in the player's command history. Example: `['merge']` blocks winning if the player used `git merge`.
+- **`descriptions.requiredCommands`** and **`descriptions.forbiddenCommands`** — Human-readable descriptions shown in the ghost overlay so the player knows what's expected. Key is the command name, value is a short explanation.
+
+Command names are the git subcommand only (e.g., `'commit'`, `'stash'`, `'rebase'`), NOT including flags. `git commit --amend` is tracked as `'commit'`, so flag-level distinctions cannot be enforced.
+
+### Warning Slack Messages
+
+When a level has command constraints, add Slack messages with `variant: 'warning'` to nudge the player back on track. Warning messages render with an amber left border and tinted background, visually distinct from normal messages.
+
+**Two patterns:**
+
+1. **Forbidden command warning** — Fires when the player uses a forbidden command. Use `after_command` trigger:
+   ```typescript
+   {
+     from: 'sarah',
+     trigger: { type: 'after_command', command: 'merge' },
+     text: 'hold on — you merged the whole branch. use cherry-pick instead.',
+     variant: 'warning',
+   }
+   ```
+
+2. **Missing required command nudge** — Fires when the player uses command X but hasn't used required command Y yet. Use `after_command_without` trigger:
+   ```typescript
+   {
+     from: 'sarah',
+     trigger: { type: 'after_command_without', command: 'add', without: 'stash' },
+     text: 'you should stash your changes first before switching branches.',
+     variant: 'warning',
+   }
+   ```
+   This message automatically disappears once the player uses `stash` (the `without` command), so it's self-correcting.
+
+**Guidelines for warning messages:**
+- Stay in character — Alex is casual, Sarah is thorough, Marcus is terse
+- Be specific about what went wrong AND what to do instead
+- Don't repeat the level instructions verbatim — add context the player wouldn't get elsewhere
+- One warning per constraint is sufficient; don't overwhelm with multiple warnings
 
 ---
 

@@ -71,11 +71,13 @@ export const level2_04: Scenario = {
     remoteBranches: ['feature/dashboard'],
     head: { type: 'branch', name: 'feature/dashboard' },
     workingTreeClean: true,
+    requiredCommands: ['stash'],
     descriptions: {
       branches: { 'feature/dashboard': 'stashed changes committed here' },
       remoteBranches: { 'feature/dashboard': 'pushed to remote' },
       head: 'on the feature branch',
       workingTree: 'stash applied and committed',
+      requiredCommands: { stash: 'use stash to save and restore work' },
     },
   },
 
@@ -89,6 +91,12 @@ export const level2_04: Scenario = {
       from: 'sarah',
       text: 'Use "git stash" to temporarily save your changes. Your working tree will be clean so you can switch branches safely.',
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'sarah',
+      text: "wait — you should stash your changes first before switching branches. try git stash.",
+      trigger: { type: 'after_command_without', command: 'add', without: 'stash' },
+      variant: 'warning',
     },
     {
       from: 'marcus',

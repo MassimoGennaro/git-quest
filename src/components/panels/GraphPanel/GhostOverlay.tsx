@@ -12,6 +12,8 @@ interface GhostOverlayProps {
   yOffset: number;
   /** X position (left margin) */
   xOffset: number;
+  /** Commands the player has executed so far (git subcommand names) */
+  executedCommands?: string[];
 }
 
 /**
@@ -25,6 +27,7 @@ export function GhostOverlay({
   startingState,
   yOffset,
   xOffset,
+  executedCommands = [],
 }: GhostOverlayProps) {
   const descriptions = target.descriptions;
 
@@ -65,6 +68,27 @@ export function GhostOverlay({
     ? Object.keys(state.index).length === 0 &&
       Object.keys(state.workingTree.files).length === 0
     : false;
+
+  // Command constraint items
+  const requiredCommandItems: Array<{
+    name: string;
+    description?: string;
+    isSatisfied: boolean;
+  }> = (target.requiredCommands ?? []).map((cmd) => ({
+    name: `must use: ${cmd}`,
+    description: descriptions?.requiredCommands?.[cmd],
+    isSatisfied: executedCommands.includes(cmd),
+  }));
+
+  const forbiddenCommandItems: Array<{
+    name: string;
+    description?: string;
+    isSatisfied: boolean;
+  }> = (target.forbiddenCommands ?? []).map((cmd) => ({
+    name: `must NOT use: ${cmd}`,
+    description: descriptions?.forbiddenCommands?.[cmd],
+    isSatisfied: !executedCommands.includes(cmd),
+  }));
 
   const ROW_HEIGHT = 28;
   const GHOST_X = xOffset + 10;
@@ -218,6 +242,43 @@ export function GhostOverlay({
           'ghost-head',
         );
       })()}
+
+      {/* Required command constraints */}
+      {requiredCommandItems.map((item, i) => {
+        const rowIndex =
+          branchItems.length +
+          remoteItems.length +
+          (showWorkingTree ? 1 : 0) +
+          (target.head.type === 'branch' ? 1 : 0) +
+          i;
+        const ghostY = yOffset + 24 + rowIndex * EFFECTIVE_ROW_HEIGHT;
+        return renderRow(
+          ghostY,
+          item.name,
+          item.description,
+          item.isSatisfied,
+          `ghost-required-${i}`,
+        );
+      })}
+
+      {/* Forbidden command constraints */}
+      {forbiddenCommandItems.map((item, i) => {
+        const rowIndex =
+          branchItems.length +
+          remoteItems.length +
+          (showWorkingTree ? 1 : 0) +
+          (target.head.type === 'branch' ? 1 : 0) +
+          requiredCommandItems.length +
+          i;
+        const ghostY = yOffset + 24 + rowIndex * EFFECTIVE_ROW_HEIGHT;
+        return renderRow(
+          ghostY,
+          item.name,
+          item.description,
+          item.isSatisfied,
+          `ghost-forbidden-${i}`,
+        );
+      })}
     </g>
   );
 }

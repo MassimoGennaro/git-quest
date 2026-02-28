@@ -126,11 +126,15 @@ export const level4_02: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    requiredCommands: ['cherry-pick'],
+    forbiddenCommands: ['merge'],
     descriptions: {
       branches: { main: 'contains cherry-picked "fix crash on null coords"' },
       remoteBranches: { main: 'pushed with the fix applied' },
       head: 'on main',
       workingTree: 'no uncommitted changes',
+      requiredCommands: { 'cherry-pick': 'apply a single commit from another branch' },
+      forbiddenCommands: { merge: 'do NOT merge the whole feature branch' },
     },
   },
 
@@ -139,6 +143,12 @@ export const level4_02: Scenario = {
       from: 'sarah',
       text: "there's a null pointer crash in production from gps.js. the fix is in feature/gps — the commit \"fix crash on null coords\". cherry-pick just that fix onto main and push. do NOT merge the whole feature branch.",
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'sarah',
+      text: "hold on — you merged the whole feature branch. we only needed one commit. undo the merge and use cherry-pick to grab just the fix.",
+      trigger: { type: 'after_command', command: 'merge' },
+      variant: 'warning',
     },
     {
       from: 'marcus',

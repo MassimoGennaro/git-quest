@@ -109,7 +109,7 @@ export function AppLayout({ level, onNextLevel, onRetry, onShowSelector }: AppLa
       {/* Main content: Working Tree + Graph */}
       <div className="flex flex-1 min-h-0">
         <WorkingTreePanel state={state} />
-        <GraphPanel state={state} targetState={scenario.targetState} startingState={scenario.startingState} />
+        <GraphPanel state={state} targetState={scenario.targetState} startingState={scenario.startingState} executedCommands={engine.executedCommands} />
       </div>
 
       {/* Terminal */}

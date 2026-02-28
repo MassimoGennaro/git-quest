@@ -25,6 +25,7 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 export type SlackTrigger =
   | { type: 'level_start' }
   | { type: 'after_command'; command: string }
+  | { type: 'after_command_without'; command: string; without: string }
   | { type: 'after_branch_created'; name: string }
   | { type: 'after_commit' }
   | { type: 'conflict_triggered' };
@@ -34,6 +35,8 @@ export interface SlackMessage {
   from: 'alex' | 'sarah' | 'marcus';
   text: string;
   trigger: SlackTrigger;
+  /** Visual variant — 'warning' renders with amber styling for nudges/alerts */
+  variant?: 'normal' | 'warning';
 }
 
 /**
@@ -51,6 +54,10 @@ export interface TargetDescriptions {
   head?: string;
   /** Description for the working tree requirement */
   workingTree?: string;
+  /** Description for each required command, keyed by command name */
+  requiredCommands?: Record<string, string>;
+  /** Description for each forbidden command, keyed by command name */
+  forbiddenCommands?: Record<string, string>;
 }
 
 export interface TargetStateSpec {
@@ -62,6 +69,10 @@ export interface TargetStateSpec {
   head: HeadState;
   /** Whether the working tree must be clean (no staged, modified, or untracked files) */
   workingTreeClean: boolean;
+  /** Git subcommands that MUST appear in the player's command history to win */
+  requiredCommands?: string[];
+  /** Git subcommands that must NOT appear in the player's command history */
+  forbiddenCommands?: string[];
   /** Optional human-readable descriptions for each target requirement */
   descriptions?: TargetDescriptions;
 }

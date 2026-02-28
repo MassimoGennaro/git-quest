@@ -13,18 +13,22 @@ import type { TargetStateSpec } from './schema';
  * - All target remote branches must exist (if specified) and have advanced
  * - HEAD position is matched by type + branch name (or hash for detached)
  * - Working tree cleanliness checks for empty index, no modified/untracked/conflicted files
+ * - Required commands must all appear in the player's command history
+ * - Forbidden commands must not appear in the player's command history
  * - Commit messages are NOT checked
  */
 export function checkWinCondition(
   state: RepoState,
   target: TargetStateSpec,
   startingState: RepoState,
+  executedCommands: string[] = [],
 ): boolean {
   return (
     checkBranches(state, target, startingState) &&
     checkRemoteBranches(state, target, startingState) &&
     checkHead(state, target) &&
-    checkWorkingTree(state, target)
+    checkWorkingTree(state, target) &&
+    checkCommandConstraints(target, executedCommands)
   );
 }
 
@@ -95,6 +99,31 @@ function checkWorkingTree(
 
   // Working tree must have no files (all files committed)
   if (Object.keys(state.workingTree.files).length > 0) return false;
+
+  return true;
+}
+
+/**
+ * Check command constraints: required commands must all appear in history,
+ * and forbidden commands must not appear in history.
+ */
+function checkCommandConstraints(
+  target: TargetStateSpec,
+  executedCommands: string[],
+): boolean {
+  // Check required commands — every one must appear at least once
+  if (target.requiredCommands) {
+    for (const cmd of target.requiredCommands) {
+      if (!executedCommands.includes(cmd)) return false;
+    }
+  }
+
+  // Check forbidden commands — none may appear
+  if (target.forbiddenCommands) {
+    for (const cmd of target.forbiddenCommands) {
+      if (executedCommands.includes(cmd)) return false;
+    }
+  }
 
   return true;
 }
