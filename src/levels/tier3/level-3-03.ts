@@ -14,8 +14,8 @@ export const level3_03: Scenario = {
   title: 'Stash Before Merge',
   description:
     'Stash your uncommitted work, perform a merge, then restore your stash.',
-  concepts: ['stash', 'merge', 'stash pop'],
-  par: 5,
+  concepts: ['stash', 'merge', 'stash pop', 'push'],
+  par: 6,
 
   startingState: {
     commits: {
@@ -91,8 +91,15 @@ export const level3_03: Scenario = {
 
   targetState: {
     branches: ['main'],
+    remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'merged feature/maps + stashed changes committed' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'stash popped and committed',
+    },
   },
 
   slackThread: [
@@ -108,8 +115,13 @@ export const level3_03: Scenario = {
     },
     {
       from: 'marcus',
-      text: 'good.',
+      text: 'committed. push it.',
       trigger: { type: 'after_commit' },
+    },
+    {
+      from: 'alex',
+      text: 'pushed! maps are live 🗺️',
+      trigger: { type: 'after_command', command: 'push' },
     },
   ],
 
@@ -119,5 +131,6 @@ export const level3_03: Scenario = {
     'Restore your stashed changes with "git stash pop"',
     'Stage everything with "git add ." or "git add styles.css"',
     'Commit with "git commit -m \\"merge maps and add styles\\""',
+    'Push with "git push"',
   ],
 };

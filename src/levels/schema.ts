@@ -41,6 +41,18 @@ export interface SlackMessage {
  * Only checks structural properties (branch existence, HEAD, working tree) —
  * commit messages are NOT verified.
  */
+/** Per-item descriptions shown in the target state overlay */
+export interface TargetDescriptions {
+  /** Description for each local branch, keyed by branch name */
+  branches?: Record<string, string>;
+  /** Description for each remote branch, keyed by branch name */
+  remoteBranches?: Record<string, string>;
+  /** Description for the expected HEAD position */
+  head?: string;
+  /** Description for the working tree requirement */
+  workingTree?: string;
+}
+
 export interface TargetStateSpec {
   /** Local branch names that must exist */
   branches: string[];
@@ -50,6 +62,8 @@ export interface TargetStateSpec {
   head: HeadState;
   /** Whether the working tree must be clean (no staged, modified, or untracked files) */
   workingTreeClean: boolean;
+  /** Optional human-readable descriptions for each target requirement */
+  descriptions?: TargetDescriptions;
 }
 
 /** A complete level definition */

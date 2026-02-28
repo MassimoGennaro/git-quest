@@ -48,6 +48,12 @@ export const level1_01: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'new commit with README.md' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'all files committed',
+    },
   },
 
   slackThread: [

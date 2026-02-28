@@ -116,6 +116,11 @@ export const level4_01: Scenario = {
     branches: ['feature/user-profile'],
     head: { type: 'branch', name: 'feature/user-profile' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { 'feature/user-profile': 'WIP commits squashed into one clean commit' },
+      head: 'on the feature branch',
+      workingTree: 'no uncommitted changes',
+    },
   },
 
   slackThread: [

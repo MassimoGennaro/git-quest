@@ -13,8 +13,8 @@ export const level2_04: Scenario = {
   title: 'Stash Your Work',
   description:
     'Stash uncommitted changes, switch branches, then pop and commit.',
-  concepts: ['stash', 'stash pop', 'checkout'],
-  par: 5,
+  concepts: ['stash', 'stash pop', 'checkout', 'push'],
+  par: 6,
 
   startingState: {
     commits: {
@@ -68,8 +68,15 @@ export const level2_04: Scenario = {
 
   targetState: {
     branches: ['feature/dashboard'],
+    remoteBranches: ['feature/dashboard'],
     head: { type: 'branch', name: 'feature/dashboard' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { 'feature/dashboard': 'stashed changes committed here' },
+      remoteBranches: { 'feature/dashboard': 'pushed to remote' },
+      head: 'on the feature branch',
+      workingTree: 'stash applied and committed',
+    },
   },
 
   slackThread: [
@@ -89,9 +96,14 @@ export const level2_04: Scenario = {
       trigger: { type: 'after_command', command: 'checkout' },
     },
     {
+      from: 'marcus',
+      text: 'committed. now push it.',
+      trigger: { type: 'after_commit' },
+    },
+    {
       from: 'alex',
       text: 'stash workflow nailed it! 🎯',
-      trigger: { type: 'after_commit' },
+      trigger: { type: 'after_command', command: 'push' },
     },
   ],
 
@@ -101,5 +113,6 @@ export const level2_04: Scenario = {
     'Restore your changes with "git stash pop"',
     'Stage the file with "git add dashboard.js"',
     'Commit with "git commit -m \\"add charts to dashboard\\""',
+    'Push with "git push"',
   ],
 };

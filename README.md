@@ -4,7 +4,19 @@ A browser-based puzzle game for learning git. Players type real git commands in 
 
 Read Slack-style conversations from fictional coworkers, observe an interactive SVG git graph, and solve the puzzle with the fewest commands possible.
 
-<!-- TODO: Add screenshot/gif of gameplay here -->
+**Play now:** [https://massimogennaro.github.io/git-quest/](https://massimogennaro.github.io/git-quest/)
+
+### Level Select
+
+Browse 20 levels across 4 difficulty tiers -- Easy, Medium, Hard, and Pro. Each card shows the git commands involved, par score, and your best rating.
+
+![Level select screen showing 4 tiers of git puzzles](docs/assets/screenshot-levels.png)
+
+### Gameplay
+
+Each level presents a Slack-style briefing, an interactive SVG git graph, a working tree panel, and a terminal. Type real git commands to reach the target state.
+
+![Gameplay screen showing the Slack panel, git graph, and terminal](docs/assets/screenshot-gameplay.png)
 
 ## Features
 
@@ -18,7 +30,7 @@ Read Slack-style conversations from fictional coworkers, observe an interactive 
 ## Quick Start
 
 ```bash
-git clone https://github.com/<your-org>/git-quest.git
+git clone https://github.com/MassimoGennaro/git-quest.git
 cd git-quest
 npm install
 npm run dev        # http://localhost:5173
@@ -46,9 +58,19 @@ npm run dev        # http://localhost:5173
 | State management | React Context + `useReducer` |
 | Build | Vite |
 | Testing | Vitest |
-| Persistence | `localStorage` (scores only) |
+| Persistence | `localStorage` |
 
 No backend. Everything runs in the browser.
+
+### Browser State
+
+GitQuest saves your progress to `localStorage` so it persists between sessions. The following data is stored:
+
+- **Level completion status** -- which levels you have finished.
+- **Star ratings** -- best score (1-3 stars) for each completed level.
+- **Command count** -- fewest commands used per level (used for par comparison).
+
+This data never leaves your browser -- there are no accounts, no server calls, and no cookies. Clearing your browser's site data will reset all progress.
 
 ## Project Structure
 

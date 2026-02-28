@@ -91,6 +91,12 @@ export const level4_05: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'feature branch merged after squash' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'all files committed',
+    },
   },
 
   slackThread: [

@@ -18,7 +18,7 @@ export const level4_02: Scenario = {
   description:
     'Cherry-pick a critical bug fix from a feature branch onto main without merging the whole branch.',
   concepts: ['cherry-pick'],
-  par: 3,
+  par: 2,
 
   startingState: {
     commits: {
@@ -126,6 +126,12 @@ export const level4_02: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'contains cherry-picked "fix crash on null coords"' },
+      remoteBranches: { main: 'pushed with the fix applied' },
+      head: 'on main',
+      workingTree: 'no uncommitted changes',
+    },
   },
 
   slackThread: [

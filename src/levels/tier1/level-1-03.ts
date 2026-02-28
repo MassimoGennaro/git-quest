@@ -61,6 +61,12 @@ export const level1_03: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'amended commit includes auth.test.js' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'all files committed',
+    },
   },
 
   slackThread: [

@@ -16,7 +16,7 @@ export const level3_04: Scenario = {
   description:
     'Undo the last commit with reset --soft, add a missing file, and recommit.',
   concepts: ['reset --soft'],
-  par: 3,
+  par: 4,
 
   startingState: {
     commits: {
@@ -102,6 +102,12 @@ export const level3_04: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'recommitted with validate.test.js included' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'all files committed',
+    },
   },
 
   slackThread: [

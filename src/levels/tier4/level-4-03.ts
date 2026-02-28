@@ -92,6 +92,11 @@ export const level4_03: Scenario = {
     branches: ['feature/leaderboard'],
     head: { type: 'branch', name: 'feature/leaderboard' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { 'feature/leaderboard': 'rebased onto main, conflict resolved' },
+      head: 'on the feature branch',
+      workingTree: 'rebase completed cleanly',
+    },
   },
 
   slackThread: [

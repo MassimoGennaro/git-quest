@@ -77,6 +77,12 @@ export const level2_01: Scenario = {
     remoteBranches: ['feature/login-validation'],
     head: { type: 'branch', name: 'feature/login-validation' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { 'feature/login-validation': 'new branch created from develop' },
+      remoteBranches: { 'feature/login-validation': 'pushed to remote' },
+      head: 'on the feature branch',
+      workingTree: 'no uncommitted changes',
+    },
   },
 
   slackThread: [

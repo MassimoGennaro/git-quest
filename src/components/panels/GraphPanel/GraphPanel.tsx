@@ -261,9 +261,11 @@ export function GraphPanel({ state, targetState, startingState }: GraphPanelProp
   const ghostTargetCount = targetState
     ? targetState.branches.length +
       (targetState.remoteBranches?.length ?? 0) +
+      (targetState.workingTreeClean ? 1 : 0) + // working tree row
       1 // HEAD line
     : 0;
-  const ghostHeight = targetState ? ghostTargetCount * 32 + 40 : 0;
+  const ghostRowHeight = targetState?.descriptions ? 38 : 32;
+  const ghostHeight = targetState ? ghostTargetCount * ghostRowHeight + 40 : 0;
   const graphBottomY = nodes.length * 56 + 60;
 
   const svgHeight = graphBottomY + ghostHeight;
