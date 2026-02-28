@@ -17,7 +17,7 @@ interface GhostOverlayProps {
 /**
  * Render a simplified ghost visualization of the target state.
  * Shows expected branch names using dashed strokes and 40% opacity.
- * Green checkmarks appear when a branch requirement is satisfied.
+ * Amber/green checkmarks appear when a branch requirement is satisfied.
  */
 export function GhostOverlay({
   target,
@@ -57,16 +57,17 @@ export function GhostOverlay({
   const GHOST_X = xOffset + 10;
 
   return (
-    <g opacity={0.4}>
+    <g opacity={0.5}>
       {/* Ghost label */}
       <text
         x={GHOST_X}
         y={yOffset}
-        className="fill-gray-500 text-[10px] font-bold uppercase tracking-wider"
-        fontFamily="monospace"
+        fill="#f59e0b"
+        className="text-[10px] font-bold uppercase tracking-wider"
+        fontFamily="'JetBrains Mono', monospace"
         dominantBaseline="middle"
       >
-        TARGET STATE
+        &#x2736; TARGET STATE
       </text>
 
       {/* Ghost branch nodes */}
@@ -80,7 +81,7 @@ export function GhostOverlay({
               cy={ghostY}
               r={5}
               fill={branch.isSatisfied ? '#34d399' : 'none'}
-              stroke={branch.isSatisfied ? '#34d399' : '#6b7280'}
+              stroke={branch.isSatisfied ? '#34d399' : '#3d4059'}
               strokeWidth={1.5}
               strokeDasharray={branch.isSatisfied ? 'none' : '3,2'}
             />
@@ -89,22 +90,22 @@ export function GhostOverlay({
               <text
                 x={GHOST_X}
                 y={ghostY + 1}
-                className="fill-gray-900 text-[8px] font-bold"
-                fontFamily="monospace"
+                fill="#0c0d11"
+                className="text-[8px] font-bold"
+                fontFamily="'JetBrains Mono', monospace"
                 textAnchor="middle"
                 dominantBaseline="middle"
               >
-                ✓
+                &#x2713;
               </text>
             )}
 
             <text
               x={GHOST_X + 14}
               y={ghostY}
-              className={`text-[11px] font-semibold ${
-                branch.isSatisfied ? 'fill-green-400' : 'fill-gray-500'
-              }`}
-              fontFamily="monospace"
+              className="text-[11px] font-semibold"
+              fill={branch.isSatisfied ? '#34d399' : '#555873'}
+              fontFamily="'JetBrains Mono', monospace"
               dominantBaseline="middle"
             >
               {branch.name}
@@ -125,7 +126,7 @@ export function GhostOverlay({
               cy={ghostY}
               r={5}
               fill={remote.isSatisfied ? '#34d399' : 'none'}
-              stroke={remote.isSatisfied ? '#34d399' : '#6b7280'}
+              stroke={remote.isSatisfied ? '#34d399' : '#3d4059'}
               strokeWidth={1.5}
               strokeDasharray={remote.isSatisfied ? 'none' : '3,2'}
             />
@@ -134,22 +135,22 @@ export function GhostOverlay({
               <text
                 x={GHOST_X}
                 y={ghostY + 1}
-                className="fill-gray-900 text-[8px] font-bold"
-                fontFamily="monospace"
+                fill="#0c0d11"
+                className="text-[8px] font-bold"
+                fontFamily="'JetBrains Mono', monospace"
                 textAnchor="middle"
                 dominantBaseline="middle"
               >
-                ✓
+                &#x2713;
               </text>
             )}
 
             <text
               x={GHOST_X + 14}
               y={ghostY}
-              className={`text-[11px] font-semibold ${
-                remote.isSatisfied ? 'fill-green-400' : 'fill-gray-500'
-              }`}
-              fontFamily="monospace"
+              className="text-[11px] font-semibold"
+              fill={remote.isSatisfied ? '#34d399' : '#555873'}
+              fontFamily="'JetBrains Mono', monospace"
               dominantBaseline="middle"
             >
               {remote.name}
@@ -172,14 +173,13 @@ export function GhostOverlay({
               <text
                 x={GHOST_X + 14}
                 y={ghostY}
-                className={`text-[11px] font-semibold ${
-                  isHeadSatisfied ? 'fill-green-400' : 'fill-yellow-600'
-                }`}
-                fontFamily="monospace"
+                className="text-[11px] font-semibold"
+                fill={isHeadSatisfied ? '#34d399' : '#f59e0b'}
+                fontFamily="'JetBrains Mono', monospace"
                 dominantBaseline="middle"
               >
-                HEAD → {target.head.name}{' '}
-                {isHeadSatisfied ? '✓' : ''}
+                HEAD &#x2192; {target.head.name}{' '}
+                {isHeadSatisfied ? '\u2713' : ''}
               </text>
             );
           })()}

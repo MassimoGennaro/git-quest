@@ -45,53 +45,53 @@ export function WorkingTreePanel({ state }: WorkingTreePanelProps) {
     conflicted.length === 0;
 
   return (
-    <div className="w-56 bg-gray-850 border-r border-gray-700 overflow-y-auto flex flex-col text-sm">
-      <div className="px-3 py-2 border-b border-gray-700 font-semibold text-gray-300 uppercase tracking-wider text-xs">
-        Working Tree
+    <div className="w-56 bg-panel-900 border-r border-accent-400/10 overflow-y-auto flex flex-col text-sm">
+      <div className="px-3 py-2 border-b border-panel-700 font-semibold text-accent-400/70 uppercase tracking-wider text-xs">
+        &#x23FA; Working Tree
       </div>
 
       {isEmpty && (
-        <div className="px-3 py-4 text-gray-500 text-xs italic">
+        <div className="px-3 py-4 text-panel-500 text-xs italic">
           Clean working tree
         </div>
       )}
 
       {staged.length > 0 && (
-        <Section title="Staged" color="text-green-400">
-          {staged.map((name) => (
-            <FileEntry key={name} name={name} status="staged" />
+        <Section title="Staged" color="text-term-400">
+          {staged.map((name, i) => (
+            <FileEntry key={name} name={name} status="staged" isLast={i === staged.length - 1} />
           ))}
         </Section>
       )}
 
       {conflicted.length > 0 && (
         <Section title="Conflicted" color="text-red-500">
-          {conflicted.map((name) => (
-            <FileEntry key={name} name={name} status="conflicted" />
+          {conflicted.map((name, i) => (
+            <FileEntry key={name} name={name} status="conflicted" isLast={i === conflicted.length - 1} />
           ))}
         </Section>
       )}
 
       {modified.length > 0 && (
         <Section title="Modified" color="text-yellow-400">
-          {modified.map((name) => (
-            <FileEntry key={name} name={name} status="modified" />
+          {modified.map((name, i) => (
+            <FileEntry key={name} name={name} status="modified" isLast={i === modified.length - 1} />
           ))}
         </Section>
       )}
 
       {deleted.length > 0 && (
         <Section title="Deleted" color="text-red-400">
-          {deleted.map((name) => (
-            <FileEntry key={name} name={name} status="deleted" />
+          {deleted.map((name, i) => (
+            <FileEntry key={name} name={name} status="deleted" isLast={i === deleted.length - 1} />
           ))}
         </Section>
       )}
 
       {untracked.length > 0 && (
-        <Section title="Untracked" color="text-gray-400">
-          {untracked.map((name) => (
-            <FileEntry key={name} name={name} status="untracked" />
+        <Section title="Untracked" color="text-panel-400">
+          {untracked.map((name, i) => (
+            <FileEntry key={name} name={name} status="untracked" isLast={i === untracked.length - 1} />
           ))}
         </Section>
       )}
@@ -111,9 +111,9 @@ function Section({
   return (
     <div className="px-1 py-1">
       <div
-        className={`px-2 py-1 text-xs font-semibold uppercase tracking-wider ${color} border-b border-gray-700`}
+        className={`px-2 py-1 text-xs font-semibold uppercase tracking-wider ${color} border-b border-panel-700`}
       >
-        {title}
+        &#x23FA; {title}
       </div>
       {children}
     </div>

@@ -1,4 +1,4 @@
-// components/panels/LevelComplete/LevelComplete.tsx — Level complete overlay with scoring
+// components/panels/LevelComplete/LevelComplete.tsx — Mission complete overlay with scoring
 
 interface LevelCompleteProps {
   /** Level title */
@@ -29,18 +29,18 @@ export function LevelComplete({
   const stars = Array.from({ length: 3 }, (_, i) => i < score);
 
   const getMessage = () => {
-    if (score === 3) return 'Perfect!';
-    if (score === 2) return 'Well done!';
-    return 'Completed!';
+    if (score === 3) return 'Mission Perfect!';
+    if (score === 2) return 'Mission Success!';
+    return 'Mission Complete!';
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50">
-      <div className="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl max-w-sm w-full mx-4 text-center">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50">
+      <div className="bg-panel-800 border border-accent-500/20 rounded-lg shadow-2xl shadow-accent-900/10 max-w-sm w-full mx-4 text-center">
         {/* Header */}
         <div className="px-6 pt-6 pb-2">
-          <div className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-1">
-            Level Complete
+          <div className="text-xs font-semibold text-accent-400 uppercase tracking-wider mb-1 text-glow-sm">
+            &#x2736; Mission Complete &#x2736;
           </div>
           <h2 className="text-xl font-bold text-gray-100">{title}</h2>
         </div>
@@ -51,7 +51,7 @@ export function LevelComplete({
             <svg
               key={i}
               className={`w-10 h-10 transition-all duration-500 ${
-                filled ? 'text-yellow-400' : 'text-gray-600'
+                filled ? 'text-accent-400 drop-shadow-[0_0_8px_rgba(245,158,11,0.5)]' : 'text-panel-600'
               }`}
               style={{
                 animationDelay: `${i * 200}ms`,
@@ -67,10 +67,10 @@ export function LevelComplete({
 
         {/* Score details */}
         <div className="px-6 pb-4">
-          <p className="text-lg font-semibold text-gray-200 mb-2">
+          <p className="text-lg font-semibold text-accent-300 mb-2 text-glow-sm">
             {getMessage()}
           </p>
-          <div className="text-sm text-gray-400 space-y-1">
+          <div className="text-sm text-panel-400 space-y-1">
             <p>
               Commands used:{' '}
               <span className="text-gray-200 font-mono">{commandCount}</span>
@@ -86,20 +86,20 @@ export function LevelComplete({
         <div className="px-6 pb-6 flex gap-3">
           <button
             onClick={onShowSelector}
-            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-medium rounded transition-colors"
+            className="flex-1 px-4 py-2 bg-panel-700 hover:bg-panel-600 text-panel-400 text-sm font-medium rounded transition-colors"
           >
             Level List
           </button>
           <button
             onClick={onRetry}
-            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-medium rounded transition-colors"
+            className="flex-1 px-4 py-2 bg-panel-700 hover:bg-panel-600 text-panel-400 text-sm font-medium rounded transition-colors"
           >
             Retry
           </button>
           {onNextLevel && (
             <button
               onClick={onNextLevel}
-              className="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-500 text-white text-sm font-medium rounded transition-colors"
+              className="flex-1 px-4 py-2 bg-accent-500 hover:bg-accent-400 text-panel-950 text-sm font-bold rounded transition-colors shadow-glow-sm"
             >
               Next Level
             </button>

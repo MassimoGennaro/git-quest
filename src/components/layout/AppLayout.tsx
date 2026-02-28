@@ -91,7 +91,7 @@ export function AppLayout({ level, onNextLevel, onRetry, onShowSelector }: AppLa
     activeConflict ? state.workingTree.files[activeConflict] : undefined;
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900 text-gray-100">
+    <div className="h-screen flex flex-col bg-panel-950 text-gray-100 font-mono">
       {/* Top Bar */}
       <TopBar
         state={state}

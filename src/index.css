@@ -1,3 +1,75 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  /* Set the warm dark base on the html/body */
+  html, body {
+    @apply bg-panel-950 text-gray-100 font-mono antialiased;
+  }
+
+  /* Scrollbar styling for the warm sci-fi look */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-panel-950;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-panel-600 rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-panel-500;
+  }
+}
+
+@layer utilities {
+  /* Subtle amber text glow for important labels */
+  .text-glow {
+    text-shadow: 0 0 8px rgba(245, 158, 11, 0.4), 0 0 16px rgba(245, 158, 11, 0.15);
+  }
+
+  .text-glow-sm {
+    text-shadow: 0 0 4px rgba(245, 158, 11, 0.3);
+  }
+
+  /* Very subtle scanline overlay texture */
+  .scanline {
+    background-image: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 0, 0, 0.03) 2px,
+      rgba(0, 0, 0, 0.03) 4px
+    );
+    pointer-events: none;
+  }
+
+  /* Terminal block cursor */
+  .cursor-block::after {
+    content: '';
+    display: inline-block;
+    width: 0.55em;
+    height: 1.15em;
+    background-color: rgba(245, 158, 11, 0.7);
+    margin-left: 1px;
+    vertical-align: text-bottom;
+    animation: cursor-blink 1.2s ease-in-out infinite;
+  }
+
+  @keyframes cursor-blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+  }
+
+  /* Amber border accent line */
+  .border-accent-glow {
+    border-image: linear-gradient(
+      90deg,
+      rgba(245, 158, 11, 0) 0%,
+      rgba(245, 158, 11, 0.3) 50%,
+      rgba(245, 158, 11, 0) 100%
+    ) 1;
+  }
+}

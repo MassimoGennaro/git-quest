@@ -1,4 +1,4 @@
-// components/panels/SlackPanel/SlackPanel.tsx — Slack-style chat panel
+// components/panels/SlackPanel/SlackPanel.tsx — Mission comms panel
 
 import { useState, useEffect, useRef } from 'react';
 
@@ -12,7 +12,7 @@ interface SlackPanelProps {
 
 export function SlackPanel({
   messages,
-  channelName = '#dev-team',
+  channelName = '#mission-comms',
 }: SlackPanelProps) {
   const [collapsed, setCollapsed] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -26,27 +26,15 @@ export function SlackPanel({
 
   if (collapsed) {
     return (
-      <div className="border-b border-gray-700 bg-gray-800">
+      <div className="border-b border-panel-700 bg-panel-900">
         <button
           onClick={() => setCollapsed(false)}
-          className="w-full px-3 py-2 flex items-center gap-2 text-sm text-gray-400 hover:text-gray-200 transition-colors"
+          className="w-full px-3 py-2 flex items-center gap-2 text-sm text-panel-400 hover:text-accent-400 transition-colors"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
+          <span className="text-accent-400/70 text-xs">&#x23FA;</span>
           <span className="font-medium">{channelName}</span>
-          <span className="text-gray-500">
-            — {messages.length} message{messages.length !== 1 ? 's' : ''}
+          <span className="text-panel-500">
+            &mdash; {messages.length} message{messages.length !== 1 ? 's' : ''}
           </span>
         </button>
       </div>
@@ -54,53 +42,29 @@ export function SlackPanel({
   }
 
   return (
-    <div className="flex flex-col border-b border-gray-700 bg-gray-800 max-h-48">
+    <div className="flex flex-col border-b border-panel-700 bg-panel-900 max-h-48">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-3 py-1.5 border-b border-gray-700">
+      <div className="flex items-center justify-between px-3 py-1.5 border-b border-panel-700">
         <div className="flex items-center gap-2">
-          <svg
-            className="w-4 h-4 text-gray-400"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-            />
-          </svg>
-          <span className="text-sm font-bold text-gray-200">
+          <span className="text-accent-400/70 text-xs">&#x23FA;</span>
+          <span className="text-sm font-bold text-accent-300/80">
             {channelName}
           </span>
         </div>
         <button
           onClick={() => setCollapsed(true)}
-          className="text-gray-500 hover:text-gray-300 transition-colors"
+          className="text-panel-500 hover:text-accent-400 transition-colors text-xs font-mono"
           title="Collapse"
         >
-          <svg
-            className="w-4 h-4"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M19 9l-7 7-7-7"
-            />
-          </svg>
+          &#x25BC;
         </button>
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 overflow-y-auto py-1">
         {messages.length === 0 ? (
-          <p className="px-3 py-2 text-sm text-gray-500 italic">
-            No messages yet...
+          <p className="px-3 py-2 text-sm text-panel-500 italic">
+            Awaiting transmission...
           </p>
         ) : (
           messages.map((msg, i) => (

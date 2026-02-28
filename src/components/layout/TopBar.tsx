@@ -42,36 +42,40 @@ export function TopBar({
   const difficulty = TIER_TO_DIFFICULTY[scenario.tier];
   const difficultyLabel = difficulty ? DIFFICULTY_LABELS[difficulty] : `Tier ${scenario.tier}`;
   const badgeColor = difficulty
-    ? DIFFICULTY_BADGE_COLORS[difficulty] ?? 'bg-gray-600 text-gray-200'
-    : 'bg-gray-600 text-gray-200';
+    ? DIFFICULTY_BADGE_COLORS[difficulty] ?? 'bg-panel-600 text-gray-200'
+    : 'bg-panel-600 text-gray-200';
 
   // Color the move counter: green at/under par, yellow at par+1..par+2, red beyond
   const isOverPar = commandCount > scenario.par;
   const isNearPar = commandCount > scenario.par && commandCount <= scenario.par + 2;
   const moveCountColor = commandCount === 0
-    ? 'text-gray-500'
+    ? 'text-panel-500'
     : isOverPar
       ? isNearPar
         ? 'text-yellow-400'
         : 'text-red-400'
-      : 'text-green-400';
+      : 'text-term-400';
+
+  // Glow effect when at/under par
+  const moveCountGlow =
+    commandCount > 0 && !isOverPar ? 'text-glow-sm' : '';
 
   return (
     <>
-      <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
+      <div className="flex items-center justify-between px-4 py-2 bg-panel-900/90 backdrop-blur-sm border-b border-accent-400/20">
         {/* Left: levels button + branch indicator + move counter */}
         <div className="flex items-center gap-3">
           <button
             onClick={onShowSelector}
-            className="text-sm font-mono px-2 py-0.5 rounded text-gray-300 hover:text-white hover:bg-gray-700 transition-colors border border-gray-600 hover:border-gray-500"
+            className="text-sm font-mono px-2 py-0.5 rounded text-panel-400 hover:text-accent-400 hover:bg-panel-750 transition-colors border border-panel-600 hover:border-accent-500/40"
             title="Back to level list"
           >
-            Levels
+            &#x2190; Levels
           </button>
-          <span className="text-blue-400 font-mono text-sm">
-            &#x2387; {branchDisplay}
+          <span className="text-accent-400 font-mono text-sm">
+            &#x23FA; {branchDisplay}
           </span>
-          <span className={`font-mono text-xs ${moveCountColor}`}>
+          <span className={`font-mono text-xs ${moveCountColor} ${moveCountGlow}`}>
             {commandCount}/{scenario.par} moves
           </span>
         </div>
@@ -83,10 +87,10 @@ export function TopBar({
           >
             {difficultyLabel}
           </span>
-          <span className="text-gray-100 font-bold tracking-wide">
-            {scenario.title}
+          <span className="text-accent-300 font-bold tracking-wide text-glow-sm">
+            &#x2736; {scenario.title}
           </span>
-          <span className="text-xs text-gray-500 font-mono">
+          <span className="text-xs text-panel-500 font-mono">
             par {scenario.par}
           </span>
         </div>
@@ -98,8 +102,8 @@ export function TopBar({
             disabled={!canUndo}
             className={`text-sm font-mono px-2 py-0.5 rounded transition-colors ${
               canUndo
-                ? 'text-gray-300 hover:text-white hover:bg-gray-700'
-                : 'text-gray-600 cursor-not-allowed'
+                ? 'text-panel-400 hover:text-accent-400 hover:bg-panel-750'
+                : 'text-panel-600 cursor-not-allowed'
             }`}
             title="Undo last command"
           >
@@ -107,7 +111,7 @@ export function TopBar({
           </button>
           <button
             onClick={onRetry}
-            className="text-sm font-mono px-2 py-0.5 rounded text-gray-300 hover:text-white hover:bg-gray-700 transition-colors"
+            className="text-sm font-mono px-2 py-0.5 rounded text-panel-400 hover:text-accent-400 hover:bg-panel-750 transition-colors"
             title="Restart level"
           >
             retry
@@ -115,9 +119,9 @@ export function TopBar({
           {scenario.hints && scenario.hints.length > 0 && (
             <button
               onClick={() => setShowHints(!showHints)}
-              className="text-sm text-gray-400 hover:text-yellow-400 transition-colors font-mono"
+              className="text-sm text-panel-400 hover:text-accent-400 transition-colors font-mono"
             >
-              {showHints ? 'hide hints' : 'hints'}
+              {showHints ? 'hide hints' : '\u273D hints'}
             </button>
           )}
         </div>
@@ -125,10 +129,10 @@ export function TopBar({
 
       {/* Hints dropdown */}
       {showHints && scenario.hints && (
-        <div className="bg-gray-800 border-b border-gray-700 px-4 py-2">
+        <div className="bg-panel-900 border-b border-accent-400/10 px-4 py-2">
           <ol className="list-decimal list-inside space-y-1">
             {scenario.hints.map((hint, i) => (
-              <li key={i} className="text-xs text-yellow-300/80 font-mono">
+              <li key={i} className="text-xs text-accent-300/80 font-mono">
                 {hint}
               </li>
             ))}

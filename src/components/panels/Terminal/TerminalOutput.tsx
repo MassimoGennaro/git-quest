@@ -16,7 +16,7 @@ export function TerminalOutput({ lines }: TerminalOutputProps) {
   }, [lines.length]);
 
   return (
-    <div className="flex-1 overflow-y-auto px-3 py-2 font-mono text-sm leading-relaxed">
+    <div className="flex-1 overflow-y-auto px-3 py-2 font-mono text-sm leading-relaxed relative z-10">
       {lines.map((line, i) => (
         <div
           key={i}
@@ -24,11 +24,13 @@ export function TerminalOutput({ lines }: TerminalOutputProps) {
             line.type === 'error'
               ? 'text-red-400'
               : line.type === 'input'
-                ? 'text-gray-400'
-                : 'text-green-300'
+                ? 'text-panel-400'
+                : 'text-term-400'
           }
         >
-          <pre className="whitespace-pre-wrap break-words m-0">{line.text}</pre>
+          <pre className="whitespace-pre-wrap break-words m-0">
+            {line.type === 'input' ? `\u23BF ${line.text}` : line.type === 'error' ? `\u23FA ${line.text}` : line.text}
+          </pre>
         </div>
       ))}
       <div ref={bottomRef} />

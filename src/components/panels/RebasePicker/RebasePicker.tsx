@@ -64,15 +64,15 @@ export function RebasePicker({ info, onApply, onCancel }: RebasePickerProps) {
   const hasPick = commits.some((c) => c.action === 'pick');
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-xl flex flex-col">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-panel-800 border border-accent-500/20 rounded-lg shadow-2xl shadow-accent-900/10 w-full max-w-xl flex flex-col">
         {/* Header */}
-        <div className="px-4 py-3 border-b border-gray-600">
+        <div className="px-4 py-3 border-b border-accent-500/20">
           <h2 className="text-sm font-bold text-purple-400">
-            Interactive Rebase
+            &#x23FA; Interactive Rebase
           </h2>
-          <p className="text-xs text-gray-400 mt-0.5">
-            Click the action badge to cycle: pick → squash → drop.
+          <p className="text-xs text-panel-400 mt-0.5">
+            Click the action badge to cycle: pick &#x2192; squash &#x2192; drop.
             Oldest commit is at the top.
           </p>
         </div>
@@ -82,7 +82,7 @@ export function RebasePicker({ info, onApply, onCancel }: RebasePickerProps) {
           {commits.map((commit, i) => (
             <div
               key={commit.hash}
-              className="flex items-center gap-3 px-4 py-2 hover:bg-gray-750/50"
+              className="flex items-center gap-3 px-4 py-2 hover:bg-panel-750/50 transition-colors"
             >
               {/* Action badge (clickable) */}
               <button
@@ -93,12 +93,12 @@ export function RebasePicker({ info, onApply, onCancel }: RebasePickerProps) {
               </button>
 
               {/* Hash */}
-              <span className="text-xs text-gray-500 font-mono flex-shrink-0">
+              <span className="text-xs text-panel-500 font-mono flex-shrink-0">
                 {commit.hash.slice(0, 7)}
               </span>
 
               {/* Message */}
-              <span className="text-sm text-gray-200 truncate">
+              <span className="text-sm text-panel-400 truncate">
                 {commit.message}
               </span>
             </div>
@@ -106,8 +106,8 @@ export function RebasePicker({ info, onApply, onCancel }: RebasePickerProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-700 flex items-center justify-between">
-          <div className="text-[10px] text-gray-500">
+        <div className="px-4 py-3 border-t border-panel-700 flex items-center justify-between">
+          <div className="text-[10px] text-panel-500">
             {!hasPick && (
               <span className="text-red-400">
                 At least one commit must be picked.
@@ -117,7 +117,7 @@ export function RebasePicker({ info, onApply, onCancel }: RebasePickerProps) {
           <div className="flex gap-2">
             <button
               onClick={onCancel}
-              className="px-3 py-1.5 bg-gray-700 hover:bg-gray-600 text-gray-200 text-xs font-medium rounded transition-colors"
+              className="px-3 py-1.5 bg-panel-700 hover:bg-panel-600 text-panel-400 text-xs font-medium rounded transition-colors"
             >
               Cancel
             </button>
@@ -127,7 +127,7 @@ export function RebasePicker({ info, onApply, onCancel }: RebasePickerProps) {
               className={`px-4 py-1.5 text-xs font-bold rounded transition-colors ${
                 hasPick
                   ? 'bg-purple-600 hover:bg-purple-500 text-white'
-                  : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                  : 'bg-panel-600 text-panel-500 cursor-not-allowed'
               }`}
             >
               Apply Rebase

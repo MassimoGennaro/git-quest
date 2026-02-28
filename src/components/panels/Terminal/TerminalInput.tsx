@@ -8,15 +8,17 @@ interface TerminalInputProps {
 
 export function TerminalInput({ value, onChange, onKeyDown }: TerminalInputProps) {
   return (
-    <div className="flex items-center gap-2 px-3 py-2 border-t border-gray-700">
-      <span className="text-green-400 font-mono text-sm select-none">$</span>
+    <div className="flex items-center gap-2 px-3 py-2 border-t border-panel-700 relative z-10">
+      <span className="text-accent-400 font-mono text-sm select-none text-glow-sm">
+        &#x2736; gitquest &gt;
+      </span>
       <input
         type="text"
         value={value}
         onChange={(e) => onChange(e.target.value)}
         onKeyDown={onKeyDown}
-        className="flex-1 bg-transparent text-gray-100 font-mono text-sm outline-none placeholder-gray-600"
-        placeholder="git ..."
+        className="flex-1 bg-transparent text-gray-100 font-mono text-sm outline-none placeholder-panel-500 caret-accent-400"
+        placeholder="type a git command..."
         autoFocus
         spellCheck={false}
         autoComplete="off"

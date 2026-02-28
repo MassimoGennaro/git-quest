@@ -82,11 +82,11 @@ function SidePanel({
   return (
     <div className="flex flex-col flex-1 min-w-0">
       <div
-        className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 ${titleColor} border-b ${borderColor} bg-gray-800/50`}
+        className={`text-xs font-semibold uppercase tracking-wider px-3 py-1.5 ${titleColor} border-b ${borderColor} bg-panel-800/50`}
       >
         {title}
       </div>
-      <div className="flex-1 overflow-auto bg-gray-950 font-mono text-xs leading-5">
+      <div className="flex-1 overflow-auto bg-panel-950 font-mono text-xs leading-5">
         {diffResult.map((line, i) => (
           <div
             key={i}
@@ -94,7 +94,7 @@ function SidePanel({
               line.status !== 'unchanged' ? highlightBg : ''
             }`}
           >
-            <span className="w-8 flex-shrink-0 text-right pr-2 text-gray-600 select-none border-r border-gray-800">
+            <span className="w-8 flex-shrink-0 text-right pr-2 text-panel-600 select-none border-r border-panel-800">
               {i + 1}
             </span>
             <pre className="px-2 whitespace-pre-wrap break-all flex-1">
@@ -118,17 +118,17 @@ function ResultPanel({
   const lines = value.split('\n');
 
   return (
-    <div className="flex flex-col flex-1 min-w-0 border-x border-gray-700">
-      <div className="text-xs font-semibold uppercase tracking-wider px-3 py-1.5 text-gray-300 border-b border-gray-700 bg-gray-800/50">
+    <div className="flex flex-col flex-1 min-w-0 border-x border-panel-700">
+      <div className="text-xs font-semibold uppercase tracking-wider px-3 py-1.5 text-panel-400 border-b border-panel-700 bg-panel-800/50">
         Result
       </div>
-      <div className="flex-1 relative overflow-auto bg-gray-900">
+      <div className="flex-1 relative overflow-auto bg-panel-900">
         {/* Line numbers (non-interactive overlay) */}
         <div className="absolute left-0 top-0 bottom-0 w-8 font-mono text-xs leading-5 pointer-events-none z-10">
           {lines.map((_, i) => (
             <div
               key={i}
-              className="text-right pr-2 text-gray-600 border-r border-gray-800 select-none"
+              className="text-right pr-2 text-panel-600 border-r border-panel-800 select-none"
             >
               {i + 1}
             </div>
@@ -138,7 +138,7 @@ function ResultPanel({
         <textarea
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className="w-full h-full bg-transparent text-gray-100 font-mono text-xs leading-5 pl-10 pr-2 py-0 resize-none outline-none"
+          className="w-full h-full bg-transparent text-gray-100 font-mono text-xs leading-5 pl-10 pr-2 py-0 resize-none outline-none caret-accent-400"
           spellCheck={false}
           autoComplete="off"
         />
@@ -180,40 +180,28 @@ export function ConflictPicker({
   const theirsDiff = diffLines(ancestorContent, theirsContent);
 
   return (
-    <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-      <div className="bg-gray-800 border border-gray-600 rounded-lg shadow-2xl w-full max-w-6xl h-[80vh] flex flex-col">
+    <div className="fixed inset-0 bg-black/80 flex items-center justify-center z-50 p-4">
+      <div className="bg-panel-800 border border-accent-500/20 rounded-lg shadow-2xl shadow-accent-900/10 w-full max-w-6xl h-[80vh] flex flex-col">
         {/* Header bar */}
-        <div className="px-4 py-2 border-b border-gray-600 flex items-center justify-between flex-shrink-0">
+        <div className="px-4 py-2 border-b border-accent-500/20 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             <h2 className="text-sm font-bold text-red-400">
-              Merge Conflict
+              &#x23FA; Merge Conflict
             </h2>
-            <span className="text-xs text-gray-400 font-mono">
+            <span className="text-xs text-panel-400 font-mono">
               {filename}
             </span>
           </div>
           <button
             onClick={onDismiss}
-            className="text-gray-500 hover:text-gray-300 transition-colors"
+            className="text-panel-500 hover:text-accent-400 transition-colors font-mono text-sm"
           >
-            <svg
-              className="w-5 h-5"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M6 18L18 6M6 6l12 12"
-              />
-            </svg>
+            &#x2715;
           </button>
         </div>
 
         {/* Action toolbar */}
-        <div className="px-4 py-1.5 border-b border-gray-700 flex items-center gap-2 flex-shrink-0 bg-gray-800/80">
+        <div className="px-4 py-1.5 border-b border-panel-700 flex items-center gap-2 flex-shrink-0 bg-panel-800/80">
           <button
             onClick={acceptOurs}
             className="px-3 py-1 bg-blue-600/80 hover:bg-blue-500 text-white text-xs font-medium rounded transition-colors"
@@ -222,24 +210,24 @@ export function ConflictPicker({
           </button>
           <button
             onClick={acceptTheirs}
-            className="px-3 py-1 bg-green-600/80 hover:bg-green-500 text-white text-xs font-medium rounded transition-colors"
+            className="px-3 py-1 bg-emerald-600/80 hover:bg-emerald-500 text-white text-xs font-medium rounded transition-colors"
           >
             Accept Incoming
           </button>
           <div className="flex-1" />
-          <span className="text-[10px] text-gray-500 mr-2">
+          <span className="text-[10px] text-panel-500 mr-2">
             Edit the result panel or pick a side, then apply
           </span>
           <button
             onClick={handleApply}
-            className="px-4 py-1 bg-purple-600 hover:bg-purple-500 text-white text-xs font-bold rounded transition-colors"
+            className="px-4 py-1 bg-accent-500 hover:bg-accent-400 text-panel-950 text-xs font-bold rounded transition-colors"
           >
             Apply Resolution
           </button>
         </div>
 
         {/* Three-panel editor */}
-        <div className="flex flex-1 min-h-0 text-gray-300">
+        <div className="flex flex-1 min-h-0 text-panel-400">
           {/* Left: Ours (current branch) */}
           <SidePanel
             title="Current (Ours)"
@@ -255,21 +243,21 @@ export function ConflictPicker({
           {/* Right: Theirs (incoming branch) */}
           <SidePanel
             title="Incoming (Theirs)"
-            titleColor="text-green-400"
-            borderColor="border-green-900/50"
+            titleColor="text-emerald-400"
+            borderColor="border-emerald-900/50"
             diffResult={theirsDiff}
-            highlightBg="bg-green-950/40"
+            highlightBg="bg-emerald-950/40"
           />
         </div>
 
         {/* Footer with legend */}
-        <div className="px-4 py-1.5 border-t border-gray-700 flex items-center gap-4 flex-shrink-0 text-[10px] text-gray-500">
+        <div className="px-4 py-1.5 border-t border-panel-700 flex items-center gap-4 flex-shrink-0 text-[10px] text-panel-500">
           <span className="flex items-center gap-1">
             <span className="inline-block w-3 h-2 rounded-sm bg-blue-950/60 border border-blue-800/30" />
             Changed in current
           </span>
           <span className="flex items-center gap-1">
-            <span className="inline-block w-3 h-2 rounded-sm bg-green-950/60 border border-green-800/30" />
+            <span className="inline-block w-3 h-2 rounded-sm bg-emerald-950/60 border border-emerald-800/30" />
             Changed in incoming
           </span>
           <span className="flex items-center gap-1">
