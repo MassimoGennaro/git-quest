@@ -1,5 +1,7 @@
 # GitQuest
 
+![GitQuest - Learn git by solving puzzles](docs/assets/git-quest-card.png)
+
 A browser-based puzzle game for learning git. Players type real git commands in a simulated terminal to transform a repository from a starting state into a target state.
 
 Read Slack-style conversations from fictional coworkers, observe an interactive SVG git graph, and solve the puzzle with the fewest commands possible.
