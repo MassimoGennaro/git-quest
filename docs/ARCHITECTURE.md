@@ -1,0 +1,456 @@
+# ARCHITECTURE.md — GitQuest Technical Architecture
+
+## 1. Stack
+
+| Layer | Technology |
+|---|---|
+| Framework | React (with hooks) |
+| Graph rendering | SVG (in-browser, no canvas library needed for MVP) |
+| Styling | Tailwind CSS |
+| State management | React Context + `useReducer` (no Redux for MVP) |
+| Persistence | `localStorage` (scores only) |
+| Build tool | Vite |
+| Testing | Vitest (critical for the simulation engine) |
+
+No backend for MVP. Everything runs in the browser.
+
+---
+
+## 2. Module Map
+
+```
+src/
+├── engine/               # Git simulation — pure TypeScript, no React
+│   ├── types.ts          # Core data types (Commit, RepoState, CommandResult, etc.)
+│   ├── store.ts          # The object store (commits, trees, hash generation)
+│   ├── refs.ts           # Branch and HEAD management
+│   ├── index.ts          # Staging area operations
+│   ├── workingTree.ts    # Working tree state
+│   ├── commands/         # One file per implemented command
+│   │   ├── add.ts
+│   │   ├── branch.ts
+│   │   ├── checkout.ts
+│   │   ├── commit.ts
+│   │   ├── log.ts
+│   │   ├── merge.ts
+│   │   ├── push.ts
+│   │   └── status.ts
+│   ├── parser.ts         # Command string → structured command object
+│   └── runner.ts         # Dispatch parsed command → correct handler
+│
+├── levels/               # Data-driven level definitions
+│   ├── schema.ts         # TypeScript types for scenario files
+│   ├── winCondition.ts   # checkWinCondition(state, target, startingState)
+│   ├── index.ts          # Level registry (ALL_LEVELS, loadScenario, getNextLevel)
+│   ├── tier1/
+│   │   └── level-1-01.ts
+│   ├── tier2/
+│   │   └── level-2-03.ts
+│   ├── tier3/
+│   │   └── level-3-01.ts
+│   └── tier4/
+│       └── level-4-01.ts
+│
+├── components/
+│   ├── layout/
+│   │   ├── TopBar.tsx        # Branch indicator, move counter, undo/retry/hints
+│   │   └── AppLayout.tsx     # Main layout, wires all panels + overlays
+│   └── panels/
+│       ├── GraphPanel/
+│       │   ├── GraphPanel.tsx
+│       │   ├── CommitNode.tsx
+│       │   └── GhostOverlay.tsx
+│       ├── WorkingTreePanel/
+│       │   ├── WorkingTreePanel.tsx
+│       │   └── FileEntry.tsx
+│       ├── SlackPanel/
+│       │   ├── SlackPanel.tsx
+│       │   └── SlackMessageItem.tsx
+│       ├── ConflictPicker/
+│       │   └── ConflictPicker.tsx    # Three-panel merge editor
+│       ├── LevelComplete/
+│       │   └── LevelComplete.tsx     # Score + stars + next/retry
+│       └── Terminal/
+│           ├── Terminal.tsx
+│           ├── TerminalInput.tsx
+│           └── TerminalOutput.tsx
+│
+├── hooks/
+│   ├── useGitEngine.ts   # Engine-to-React bridge (execute, undo, patchState, tracking)
+│   ├── useLevel.ts       # Loads scenario, checks win condition, triggers messages
+│   └── useTerminal.ts    # Input history, keyboard handling
+│
+├── context/
+│   └── GameContext.tsx    # Global game state (current level, score, retry)
+│
+└── App.tsx               # GameProvider > GameSession > GameSessionInner
+```
+
+---
+
+## 3. Core Data Types
+
+```typescript
+// engine/types.ts
+
+/** An immutable commit object in the object store */
+export interface Commit {
+  hash: string;           // simulated short hash e.g. "a1b2c3f"
+  message: string;
+  parentHashes: string[]; // 0 for root, 1 for normal, 2 for merge commit
+  tree: FileTree;         // snapshot of all tracked files at this commit
+  timestamp: number;
+}
+
+/** A snapshot of all tracked files */
+export type FileTree = Record<string, FileContent>;
+
+export interface FileContent {
+  content: string;        // full text content of the file
+}
+
+/** The complete simulated repository state */
+export interface RepoState {
+  // Object store
+  commits: Record<string, Commit>;  // hash → commit
+
+  // Refs
+  branches: Record<string, string>; // branch name → commit hash
+  head: HeadState;
+
+  // Staging area (index)
+  index: StagedChanges;             // filename → new content
+
+  // Working tree
+  workingTree: WorkingTreeState;
+
+  // Simulated remote
+  remote: RemoteState;
+
+  // Stash stack
+  stash: StashEntry[];
+}
+
+export type HeadState =
+  | { type: 'branch'; name: string }       // attached HEAD
+  | { type: 'detached'; hash: string };    // detached HEAD
+
+export interface WorkingTreeState {
+  files: Record<string, WorkingFile>;
+}
+
+export interface WorkingFile {
+  status: 'untracked' | 'modified' | 'deleted' | 'conflicted';
+  content: string;
+  // If conflicted:
+  conflictOurs?: string;
+  conflictTheirs?: string;
+  conflictAncestor?: string;  // common ancestor content, used by three-panel editor
+}
+
+export type StagedChanges = Record<string, string>; // filename → content
+
+export interface RemoteState {
+  name: string;           // e.g. "origin"
+  branches: Record<string, string>; // branch name → commit hash
+}
+
+export interface StashEntry {
+  index: StagedChanges;
+  workingTree: WorkingTreeState;
+  message: string;
+}
+```
+
+---
+
+## 4. The Engine
+
+The engine is the heart of the project. It is **pure TypeScript with zero React dependencies** — this makes it fully unit-testable.
+
+### 4.1 Command Parser
+
+Takes a raw string like `git commit -m "fix auth"` and returns a structured object:
+
+```typescript
+export interface ParsedCommand {
+  command: string;                   // "commit"
+  args: string[];                    // positional args
+  flags: Record<string, string | boolean>;  // { m: "fix auth", amend: true }
+  raw: string;                       // original input
+}
+
+// "git checkout -b feature/login" →
+// { command: "checkout", args: ["feature/login"], flags: { b: true }, raw: "..." }
+```
+
+Unsupported commands return a `ParseError` with a helpful message.
+
+### 4.2 Command Runner
+
+```typescript
+export type CommandResult = {
+  success: boolean;
+  output: string;          // text to display in terminal
+  newState: RepoState;     // the mutated state (or unchanged if error)
+  conflictsTriggered?: ConflictSet;  // if a merge produced conflicts
+};
+
+export function runCommand(
+  parsed: ParsedCommand,
+  state: RepoState
+): CommandResult
+```
+
+Each command handler is a pure function: `(args, flags, state) => CommandResult`. This makes commands easy to test in isolation.
+
+### 4.3 Merge Algorithm (Simplified)
+
+Since file content is simulated (not real code), the merge algorithm just needs to detect conflicts, not resolve them. The approach:
+
+1. Find the common ancestor commit of the two branches being merged
+2. For each file changed in either branch since the ancestor:
+   - Changed in one branch only → auto-merge (take that version)
+   - Changed in both branches → conflict (store both versions in `WorkingFile`)
+   - Deleted in one, changed in another → conflict
+3. Return the new state with conflicted files marked
+
+The actual file content in levels is authored so conflicts are always meaningful and human-readable.
+
+### 4.4 Simulated Hashes
+
+Commit hashes are deterministic fake strings. On each commit:
+```
+hash = shortHash(message + parentHash + timestamp)
+// produces something like "a1b2c3f"
+```
+
+They look realistic but are not real SHA1. This is fine — the game teaches concepts not cryptography.
+
+---
+
+## 5. Level Schema
+
+```typescript
+// levels/schema.ts
+
+export interface Scenario {
+  id: string;                     // e.g. "tier1-01-first-commit"
+  tier: 1 | 2 | 3 | 4;
+  title: string;                  // e.g. "First Commit"
+  par: number;                    // minimum commands to complete
+
+  startingState: RepoState;       // fully defined initial repo state
+
+  targetState: TargetStateSpec;   // what the engine checks for win
+
+  slackThread: SlackMessage[];    // messages, some with trigger conditions
+
+  hints?: string[];               // optional hints shown on demand
+}
+
+export interface TargetStateSpec {
+  branches: string[];             // branch names that must exist AND have advanced
+  remoteBranches?: string[];      // remote branch names that must exist AND have advanced
+  head: HeadState;
+  workingTreeClean: boolean;
+}
+// NOTE: Only structural properties are checked. Commit messages are NOT verified.
+// "Advanced" means the branch tip hash differs from its starting state hash.
+// New branches (not present at start) only need to exist.
+
+export type SlackTrigger =
+  | { type: 'level_start' }
+  | { type: 'after_command'; command: string }
+  | { type: 'after_branch_created'; name: string }
+  | { type: 'after_commit' }
+  | { type: 'conflict_triggered' };
+
+export interface SlackMessage {
+  from: 'alex' | 'sarah' | 'marcus';
+  text: string;
+  trigger: SlackTrigger;
+}
+```
+
+---
+
+## 6. React Integration
+
+### 6.1 `useGitEngine` Hook
+
+This is the bridge between the pure engine and React. It wraps the engine in React state and provides undo support, command tracking, and conflict state management.
+
+```typescript
+export interface TerminalLine {
+  type: 'input' | 'output' | 'error';
+  text: string;
+}
+
+interface EngineSnapshot {
+  state: RepoState;
+  log: TerminalLine[];
+  commandCount: number;
+  executedCommands: string[];
+  createdBranches: Set<string>;
+  commitCount: number;
+}
+
+function useGitEngine(initialState: RepoState) {
+  // Core state
+  const [state, setState] = useState(initialState);
+  const [log, setLog] = useState<TerminalLine[]>([]);
+
+  // Command tracking
+  const commandCount: number;        // total commands executed
+  const executedCommands: string[];   // list of command names (e.g. ["add", "commit"])
+  const createdBranches: Set<string>; // branch names created during session
+  const commitCount: number;          // number of commits made
+  const hasConflicts: boolean;        // true if any file is conflicted
+
+  // Undo support — history stack of EngineSnapshot[]
+  const historyRef = useRef<EngineSnapshot[]>([]);
+  const canUndo: boolean;
+
+  function execute(input: string): void {
+    // 1. Parse command
+    // 2. Push current state onto history stack (snapshot)
+    // 3. Run command → get CommandResult
+    // 4. Update state, log, and tracking counters
+  }
+
+  function undo(): void {
+    // Pop last snapshot from history, restore all state
+  }
+
+  function patchState(newState: RepoState): void {
+    // Direct state update (used by conflict resolution — does NOT count as a command)
+  }
+
+  function reset(newState: RepoState): void {
+    // Full reset: clear state, log, history, and all tracking
+  }
+
+  return {
+    state, log, execute,
+    commandCount, executedCommands, createdBranches, commitCount, hasConflicts,
+    reset, patchState, undo, canUndo,
+  };
+}
+```
+
+### 6.2 `useLevel` Hook
+
+Loads the scenario, feeds the initial state to the engine, watches for win, and manages Slack message triggers:
+
+```typescript
+function useLevel(scenario: Scenario) {
+  const engine = useGitEngine(scenario.startingState);
+
+  // Win condition checks branch existence + advancement from starting state
+  const isWon = checkWinCondition(
+    engine.state,
+    scenario.targetState,
+    scenario.startingState   // third param: used to detect branch advancement
+  );
+
+  // Trigger Slack messages based on engine state changes
+  const visibleMessages = getVisibleMessages(
+    scenario.slackThread,
+    engine.executedCommands,
+    engine.createdBranches,
+    engine.commitCount,
+    engine.hasConflicts
+  );
+
+  // Par-based scoring: 3 stars at/under par, 2 stars par+1-2, 1 star par+3+
+  const score = computeScore(engine.commandCount, scenario.par);
+
+  return { engine, scenario, isWon, visibleMessages, score };
+}
+```
+
+---
+
+## 7. Graph Rendering (SVG)
+
+The graph is rendered as an SVG element inside the center panel. Layout is computed from the `RepoState`:
+
+```
+1. Topological sort commits (newest first)
+2. Assign each branch a horizontal lane (x position)
+3. Assign each commit a vertical position (y)
+4. Draw edges (commit → parent) as SVG paths
+5. Draw commit circles
+6. Draw branch labels
+7. Draw HEAD pointer
+8. Overlay ghost graph (target state) with 40% opacity + dashed strokes
+```
+
+Animation: when state changes, new positions are computed and SVG elements transition with CSS `transition: all 0.3s ease`.
+
+No external graph library for MVP — the git graph topology is simple enough that a custom SVG renderer is ~200 lines and gives full control over the visual style.
+
+---
+
+## 8. Build & File Structure
+
+```
+gitquest/
+├── index.html
+├── package.json
+├── vite.config.ts
+├── vitest.config.ts
+├── tsconfig.json
+├── tailwind.config.js
+├── postcss.config.js
+├── src/
+│   └── (as above)
+├── docs/
+│   ├── README.md
+│   ├── SPEC.md
+│   ├── ARCHITECTURE.md
+│   └── LEVELS.md
+└── tests/
+    ├── engine/
+    │   ├── helpers.ts             # Shared test utilities
+    │   ├── parser.test.ts         # 16 tests
+    │   ├── add.test.ts            # 8 tests
+    │   ├── commit.test.ts         # 11 tests
+    │   ├── status.test.ts         # 12 tests
+    │   ├── log.test.ts            # 8 tests
+    │   ├── runner.test.ts         # 6 tests
+    │   ├── branch.test.ts         # 9 tests
+    │   ├── checkout.test.ts       # 9 tests
+    │   ├── merge.test.ts          # 12 tests
+    │   └── push.test.ts           # 6 tests
+    └── levels/
+        └── winCondition.test.ts   # 26 tests
+```
+
+**Total: 123 tests across 11 test files.**
+
+---
+
+## 9. Implementation Order
+
+All 12 steps have been completed for the MVP:
+
+1. ~~**Engine core** — `RepoState` types, `commit`, `add`, `status`, `log` → write tests~~ ✅
+2. ~~**Graph renderer** — render a hardcoded state as SVG, no interactivity yet~~ ✅
+3. ~~**Terminal component** — input → calls engine → output displayed~~ ✅
+4. ~~**Wire them together** — engine state drives graph re-render on each command~~ ✅
+5. ~~**Working tree panel** — reads from engine state, no new logic needed~~ ✅
+6. ~~**Level loader** — load a scenario file, set initial state, check win condition~~ ✅
+7. ~~**Slack panel** — render messages, implement trigger system~~ ✅
+8. ~~**Ghost overlay** — render target state as faded layer on graph~~ ✅
+9. ~~**Branching commands** — `branch`, `checkout`, `merge` (fast-forward)~~ ✅
+10. ~~**Conflict system** — merge conflict detection + three-panel editor~~ ✅
+11. ~~**Level complete screen** — score display, next level button~~ ✅
+12. ~~**4 complete levels** — one per tier, fully authored~~ ✅
+
+### Post-MVP additions (also complete)
+- **Undo last command** — history stack in `useGitEngine`, reverts state/log/tracking
+- **Retry level** — bumps `sessionKey` in `GameContext` for full remount
+- **Move counter** — `N/par moves` display with color coding in TopBar
+- **Three-panel merge editor** — replaced simple A/B picker with ours|result|theirs editor
