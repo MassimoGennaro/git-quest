@@ -276,14 +276,19 @@ export interface TargetStateSpec {
   remoteBranches?: string[];      // remote branch names that must exist AND have advanced
   head: HeadState;
   workingTreeClean: boolean;
+  requiredCommands?: string[];    // git subcommands the player MUST use to win
+  forbiddenCommands?: string[];   // git subcommands the player must NOT use
+  descriptions?: TargetDescriptions;  // human-readable labels for ghost overlay
 }
 // NOTE: Only structural properties are checked. Commit messages are NOT verified.
 // "Advanced" means the branch tip hash differs from its starting state hash.
 // New branches (not present at start) only need to exist.
+// Command tracking stores subcommand names only (e.g., "commit"), not flags.
 
 export type SlackTrigger =
   | { type: 'level_start' }
   | { type: 'after_command'; command: string }
+  | { type: 'after_command_without'; command: string; without: string }
   | { type: 'after_branch_created'; name: string }
   | { type: 'after_commit' }
   | { type: 'conflict_triggered' };
@@ -292,6 +297,7 @@ export interface SlackMessage {
   from: 'alex' | 'sarah' | 'marcus';
   text: string;
   trigger: SlackTrigger;
+  variant?: 'normal' | 'warning';  // warning renders with amber styling
 }
 ```
 
@@ -370,11 +376,12 @@ Loads the scenario, feeds the initial state to the engine, watches for win, and 
 function useLevel(scenario: Scenario) {
   const engine = useGitEngine(scenario.startingState);
 
-  // Win condition checks branch existence + advancement from starting state
+  // Win condition checks branch existence + advancement + command constraints
   const isWon = checkWinCondition(
     engine.state,
     scenario.targetState,
-    scenario.startingState   // third param: used to detect branch advancement
+    scenario.startingState,   // third param: used to detect branch advancement
+    engine.executedCommands    // fourth param: checked against required/forbidden commands
   );
 
   // Trigger Slack messages based on engine state changes
@@ -385,6 +392,10 @@ function useLevel(scenario: Scenario) {
     engine.commitCount,
     engine.hasConflicts
   );
+  // Supports 6 trigger types: level_start, after_command, after_command_without,
+  // after_branch_created, after_commit, conflict_triggered.
+  // after_command_without fires when command was used but without-command was NOT,
+  // enabling self-correcting warning messages.
 
   // Par-based scoring: 3 stars at/under par, 2 stars par+1-2, 1 star par+3+
   const score = computeScore(engine.commandCount, scenario.par);
@@ -451,13 +462,14 @@ gitquest/
     │   ├── stash.test.ts          # 16 tests
     │   ├── reset.test.ts          # 15 tests
     │   ├── reflog.test.ts         # 5 tests
-    │   ├── cherryPick.test.ts     # 8 tests
-    │   └── rebase.test.ts         # 16 tests
-    └── levels/
-        └── winCondition.test.ts   # 26 tests
+│   ├── cherryPick.test.ts     # 8 tests
+│   └── rebase.test.ts         # 16 tests
+└── levels/
+    ├── winCondition.test.ts   # 34 tests
+    └── useLevel.test.ts       # 20 tests (getVisibleMessages + computeScore)
 ```
 
-**Total: 195 tests across 17 test files.**
+**Total: 223 tests across 18 test files.**
 
 ---
 

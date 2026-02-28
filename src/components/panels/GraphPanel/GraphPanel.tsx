@@ -12,6 +12,8 @@ interface GraphPanelProps {
   state: RepoState;
   targetState?: TargetStateSpec;
   startingState?: RepoState;
+  /** Commands the player has executed so far (git subcommand names) */
+  executedCommands?: string[];
 }
 
 /** Warm-shifted lane colors */
@@ -227,7 +229,7 @@ function layoutGraph(
   });
 }
 
-export function GraphPanel({ state, targetState, startingState }: GraphPanelProps) {
+export function GraphPanel({ state, targetState, startingState, executedCommands }: GraphPanelProps) {
   // Keep a persistent ref of all commits ever seen during this level session.
   // This prevents commits from vanishing when HEAD moves away or branches are deleted.
   const allCommitsRef = useRef<Record<string, Commit>>({});
@@ -261,9 +263,13 @@ export function GraphPanel({ state, targetState, startingState }: GraphPanelProp
   const ghostTargetCount = targetState
     ? targetState.branches.length +
       (targetState.remoteBranches?.length ?? 0) +
-      1 // HEAD line
+      (targetState.workingTreeClean ? 1 : 0) + // working tree row
+      1 + // HEAD line
+      (targetState.requiredCommands?.length ?? 0) + // required command rows
+      (targetState.forbiddenCommands?.length ?? 0) // forbidden command rows
     : 0;
-  const ghostHeight = targetState ? ghostTargetCount * 32 + 40 : 0;
+  const ghostRowHeight = targetState?.descriptions ? 38 : 32;
+  const ghostHeight = targetState ? ghostTargetCount * ghostRowHeight + 40 : 0;
   const graphBottomY = nodes.length * 56 + 60;
 
   const svgHeight = graphBottomY + ghostHeight;
@@ -351,6 +357,7 @@ export function GraphPanel({ state, targetState, startingState }: GraphPanelProp
             startingState={startingState}
             yOffset={graphBottomY}
             xOffset={30}
+            executedCommands={executedCommands}
           />
         )}
       </svg>

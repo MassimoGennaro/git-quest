@@ -18,8 +18,8 @@ export const level3_02: Scenario = {
   title: 'Conflict: No Hints',
   description:
     'Merge a conflicting branch with no Slack guidance on which version to keep.',
-  concepts: ['merge', 'conflict resolution'],
-  par: 5,
+  concepts: ['merge', 'conflict resolution', 'push'],
+  par: 6,
 
   startingState: {
     commits: {
@@ -92,8 +92,15 @@ export const level3_02: Scenario = {
 
   targetState: {
     branches: ['main'],
+    remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'merged feature/error-handling, conflict resolved' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'merge completed cleanly',
+    },
   },
 
   slackThread: [
@@ -109,8 +116,13 @@ export const level3_02: Scenario = {
     },
     {
       from: 'sarah',
-      text: 'done. nice work handling that on your own.',
+      text: 'done. now push so the team has it.',
       trigger: { type: 'after_commit' },
+    },
+    {
+      from: 'marcus',
+      text: 'pushed. nice work handling that on your own.',
+      trigger: { type: 'after_command', command: 'push' },
     },
   ],
 
@@ -119,5 +131,6 @@ export const level3_02: Scenario = {
     'Resolve the conflict in the picker — choose whichever version makes sense',
     'Stage the resolved file with "git add errors.js"',
     'Complete the merge with "git commit"',
+    'Push with "git push"',
   ],
 };

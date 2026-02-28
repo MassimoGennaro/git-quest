@@ -17,8 +17,8 @@ export const level3_01: Scenario = {
   tier: 3,
   title: 'Merge Conflict',
   description: 'Merge a branch with a conflict and resolve it.',
-  concepts: ['merge', 'conflict resolution', 'add', 'commit'],
-  par: 5,
+  concepts: ['merge', 'conflict resolution', 'add', 'commit', 'push'],
+  par: 6,
 
   startingState: {
     commits: {
@@ -73,8 +73,15 @@ export const level3_01: Scenario = {
 
   targetState: {
     branches: ['develop'],
+    remoteBranches: ['develop'],
     head: { type: 'branch', name: 'develop' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { develop: 'merged feature/auth, conflict resolved' },
+      remoteBranches: { develop: 'pushed to remote' },
+      head: 'on develop',
+      workingTree: 'merge completed cleanly',
+    },
   },
 
   slackThread: [
@@ -90,8 +97,13 @@ export const level3_01: Scenario = {
     },
     {
       from: 'alex',
-      text: 'merged! thanks 🙌',
+      text: 'merged! now push it so everyone gets the fix 🙌',
       trigger: { type: 'after_commit' },
+    },
+    {
+      from: 'marcus',
+      text: 'pushed. good.',
+      trigger: { type: 'after_command', command: 'push' },
     },
   ],
 
@@ -100,5 +112,6 @@ export const level3_01: Scenario = {
     'Use the conflict picker to keep "ours" (develop) version — timeout: 3000',
     'Stage the resolved file with "git add config.js"',
     'Complete the merge with "git commit"',
+    'Push with "git push"',
   ],
 };

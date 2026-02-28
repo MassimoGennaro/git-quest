@@ -116,6 +116,11 @@ export const level4_04: Scenario = {
     branches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { main: 'restored to "add streak counter" commit' },
+      head: 'on main',
+      workingTree: 'lost commits recovered',
+    },
   },
 
   slackThread: [

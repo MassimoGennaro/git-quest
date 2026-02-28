@@ -14,8 +14,8 @@ export const level3_03: Scenario = {
   title: 'Stash Before Merge',
   description:
     'Stash your uncommitted work, perform a merge, then restore your stash.',
-  concepts: ['stash', 'merge', 'stash pop'],
-  par: 5,
+  concepts: ['stash', 'merge', 'stash pop', 'push'],
+  par: 6,
 
   startingState: {
     commits: {
@@ -91,8 +91,20 @@ export const level3_03: Scenario = {
 
   targetState: {
     branches: ['main'],
+    remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    requiredCommands: ['stash', 'merge'],
+    descriptions: {
+      branches: { main: 'merged feature/maps + stashed changes committed' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'stash popped and committed',
+      requiredCommands: {
+        stash: 'stash uncommitted work before merging',
+        merge: 'merge the feature branch',
+      },
+    },
   },
 
   slackThread: [
@@ -102,14 +114,25 @@ export const level3_03: Scenario = {
       trigger: { type: 'level_start' },
     },
     {
+      from: 'sarah',
+      text: "you've got uncommitted changes in the working tree — merging now could get messy. stash your work first with git stash.",
+      trigger: { type: 'after_command_without', command: 'merge', without: 'stash' },
+      variant: 'warning',
+    },
+    {
       from: 'alex',
       text: 'nice, merge is clean! now pop your stash and commit everything together 👍',
       trigger: { type: 'after_command', command: 'merge' },
     },
     {
       from: 'marcus',
-      text: 'good.',
+      text: 'committed. push it.',
       trigger: { type: 'after_commit' },
+    },
+    {
+      from: 'alex',
+      text: 'pushed! maps are live 🗺️',
+      trigger: { type: 'after_command', command: 'push' },
     },
   ],
 
@@ -119,5 +142,6 @@ export const level3_03: Scenario = {
     'Restore your stashed changes with "git stash pop"',
     'Stage everything with "git add ." or "git add styles.css"',
     'Commit with "git commit -m \\"merge maps and add styles\\""',
+    'Push with "git push"',
   ],
 };

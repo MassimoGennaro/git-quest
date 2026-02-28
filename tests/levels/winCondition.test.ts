@@ -420,6 +420,129 @@ describe('checkWinCondition', () => {
     });
   });
 
+  describe('command constraints', () => {
+    it('should pass when no command constraints are specified (backward compatible)', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+      };
+      expect(checkWinCondition(state, target, startingState, [])).toBe(true);
+    });
+
+    it('should pass when required command appears in executed commands', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+        requiredCommands: ['cherry-pick'],
+      };
+      expect(
+        checkWinCondition(state, target, startingState, ['checkout', 'cherry-pick', 'push']),
+      ).toBe(true);
+    });
+
+    it('should fail when required command is missing from executed commands', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+        requiredCommands: ['cherry-pick'],
+      };
+      expect(
+        checkWinCondition(state, target, startingState, ['merge', 'push']),
+      ).toBe(false);
+    });
+
+    it('should fail when forbidden command appears in executed commands', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+        forbiddenCommands: ['merge'],
+      };
+      expect(
+        checkWinCondition(state, target, startingState, ['merge', 'push']),
+      ).toBe(false);
+    });
+
+    it('should pass when forbidden command is absent from executed commands', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+        forbiddenCommands: ['merge'],
+      };
+      expect(
+        checkWinCondition(state, target, startingState, ['cherry-pick', 'push']),
+      ).toBe(true);
+    });
+
+    it('should enforce both required and forbidden constraints together', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+        requiredCommands: ['cherry-pick'],
+        forbiddenCommands: ['merge'],
+      };
+      // Has required, no forbidden — pass
+      expect(
+        checkWinCondition(state, target, startingState, ['cherry-pick', 'push']),
+      ).toBe(true);
+      // Missing required — fail
+      expect(
+        checkWinCondition(state, target, startingState, ['push']),
+      ).toBe(false);
+      // Has both required and forbidden — fail
+      expect(
+        checkWinCondition(state, target, startingState, ['cherry-pick', 'merge', 'push']),
+      ).toBe(false);
+    });
+
+    it('should fail when only some required commands are present', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+        requiredCommands: ['rebase', 'merge'],
+      };
+      // Only rebase present, missing merge
+      expect(
+        checkWinCondition(state, target, startingState, ['rebase', 'push']),
+      ).toBe(false);
+      // Both present
+      expect(
+        checkWinCondition(state, target, startingState, ['rebase', 'merge', 'push']),
+      ).toBe(true);
+    });
+
+    it('should pass with empty executedCommands when no constraints are set', () => {
+      const state = makeState();
+      const startingState = makeStartingState();
+      const target: TargetStateSpec = {
+        branches: ['main'],
+        head: { type: 'branch', name: 'main' },
+        workingTreeClean: true,
+      };
+      expect(checkWinCondition(state, target, startingState, [])).toBe(true);
+    });
+  });
+
   describe('combined scenarios', () => {
     it('should pass for level 1-01 after player commits and pushes', () => {
       const commit1 = makeCommit('a1b2c3f', 'initial project setup');

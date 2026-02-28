@@ -46,6 +46,12 @@ export function getVisibleMessages(
       case 'after_command':
         return executedCommands.includes(trigger.command);
 
+      case 'after_command_without':
+        return (
+          executedCommands.includes(trigger.command) &&
+          !executedCommands.includes(trigger.without)
+        );
+
       case 'after_branch_created':
         return createdBranches.has(trigger.name);
 
@@ -66,8 +72,13 @@ export function useLevel(scenario: Scenario): LevelState {
 
   const isWon = useMemo(
     () =>
-      checkWinCondition(engine.state, scenario.targetState, scenario.startingState),
-    [engine.state, scenario.targetState, scenario.startingState],
+      checkWinCondition(
+        engine.state,
+        scenario.targetState,
+        scenario.startingState,
+        engine.executedCommands,
+      ),
+    [engine.state, scenario.targetState, scenario.startingState, engine.executedCommands],
   );
 
   const visibleMessages = useMemo(

@@ -69,6 +69,12 @@ export const level1_02: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: false,
+    descriptions: {
+      branches: { main: 'commit with auth.js and routes.js only' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'debug.log remains untracked',
+    },
   },
 
   slackThread: [

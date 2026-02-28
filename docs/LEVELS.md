@@ -25,6 +25,7 @@ Each level is a TypeScript file in `src/levels/tierN/`. Copy the template below.
 - Add a mid-level message triggered `after_commit` for longer levels — it rewards progress and can introduce a complication
 - Keep messages short. Alex sends 1–2 sentences. Sarah can send 3–4.
 - Don't repeat the level instructions verbatim across messages — each message adds something
+- Add `variant: 'warning'` messages for constrained levels to nudge players who go off-track (see [Warning Slack Messages](#26-warning-slack-messages) below)
 
 ### Target State Tips
 - Define target branches as a list of branch names (`string[]`) — the win condition checks that each branch **exists** and has **advanced** (tip hash differs from starting state)
@@ -32,6 +33,115 @@ Each level is a TypeScript file in `src/levels/tierN/`. Copy the template below.
 - `remoteBranches?: string[]` can optionally specify remote branches that must also exist and advance
 - Working tree clean unless there's a good reason
 - Always double-check par by mentally executing the commands yourself
+- Use `requiredCommands` and `forbiddenCommands` to prevent cheating on levels that teach a specific command (see [Command Constraints](#25-command-constraints) below)
+
+---
+
+## 2.5 Command Constraints
+
+Levels that teach a specific git workflow should enforce that the player actually uses the intended commands. Without constraints, many levels can be "cheated" — e.g., using `git merge` instead of `git cherry-pick` on the cherry-pick level.
+
+### `requiredCommands`
+
+An array of git subcommand names that **must** appear in the player's command history for the win condition to pass.
+
+```typescript
+targetState: {
+  branches: ['main'],
+  head: { type: 'branch', name: 'main' },
+  workingTreeClean: true,
+  requiredCommands: ['cherry-pick'],
+  descriptions: {
+    requiredCommands: { 'cherry-pick': 'apply a single commit from another branch' },
+  },
+}
+```
+
+The ghost overlay displays required commands with a checkmark/cross so the player knows what's expected.
+
+### `forbiddenCommands`
+
+An array of git subcommand names that must **not** appear in the player's command history.
+
+```typescript
+targetState: {
+  // ...
+  forbiddenCommands: ['merge'],
+  descriptions: {
+    forbiddenCommands: { merge: 'do NOT merge the whole feature branch' },
+  },
+}
+```
+
+### Limitations
+
+Command tracking stores the **subcommand name only** (e.g., `'commit'`, `'reset'`), not flags. This means `git commit --amend` is tracked as `'commit'`, making it impossible to distinguish from a regular commit. Level 1-03 (Amend a Commit) is not constrained for this reason.
+
+### Levels with constraints
+
+| Level | Required | Forbidden |
+|---|---|---|
+| 2-04 Stash Your Work | `stash` | — |
+| 3-03 Stash Before Merge | `stash`, `merge` | — |
+| 3-04 Fix the Last Commit | `reset` | — |
+| 4-01 The Cleanup | `rebase` | — |
+| 4-02 Cherry-Pick a Fix | `cherry-pick` | `merge` |
+| 4-03 Rebase onto Main | `rebase` | `merge` |
+| 4-05 The Full Workflow | `rebase`, `merge` | — |
+
+---
+
+## 2.6 Warning Slack Messages
+
+When a player goes off-track on a constrained level, the Slack panel shows a **warning message** — visually distinct with an amber left border and tinted background. These messages are in-character nudges that tell the player what went wrong and what to do instead.
+
+### The `variant` field
+
+`SlackMessage` has an optional `variant` field. Set it to `'warning'` to render the message with amber warning styling:
+
+```typescript
+{
+  from: 'sarah',
+  trigger: { type: 'after_command', command: 'merge' },
+  text: 'hold on — you merged the whole branch. use cherry-pick instead.',
+  variant: 'warning',
+}
+```
+
+Messages without a `variant` (or with `variant: 'normal'`) render normally.
+
+### Trigger patterns for warnings
+
+**Pattern 1: Forbidden command used** — Use `after_command` trigger. Fires permanently once the command appears in history (the player can't un-use a command):
+
+```typescript
+{
+  from: 'marcus',
+  trigger: { type: 'after_command', command: 'merge' },
+  text: 'merge creates merge commits. we need linear history. use rebase.',
+  variant: 'warning',
+}
+```
+
+**Pattern 2: Wrong approach before correct command** — Use `after_command_without` trigger. Fires when the player uses `command` but has NOT yet used `without`. **Self-correcting** — the message disappears once the player uses the required command:
+
+```typescript
+{
+  from: 'sarah',
+  trigger: { type: 'after_command_without', command: 'add', without: 'stash' },
+  text: 'stash your changes first before switching branches.',
+  variant: 'warning',
+}
+```
+
+This example fires when the player uses `git add` without having used `git stash` yet. Once they use `git stash`, the warning disappears automatically.
+
+### Writing good warning messages
+
+- **Stay in character.** Alex uses emoji, Sarah explains, Marcus is blunt.
+- **Be specific.** Say what went wrong AND what to do instead: "you merged — undo and cherry-pick".
+- **Don't repeat level_start instructions.** The warning adds new information.
+- **One warning per constraint.** Don't stack multiple warnings for the same mistake.
 
 ---
 
@@ -262,6 +372,7 @@ Working tree: clean
 branches: ["feature/user-profile"]   # must have advanced (squashed commits)
 head: { type: 'branch', name: 'feature/user-profile' }
 workingTreeClean: true
+requiredCommands: ["rebase"]         # player must use rebase -i
 
 Narrative (not checked by win condition):
   Player squashes 4 WIP commits into 1 clean commit via interactive rebase.
@@ -280,9 +391,14 @@ git rebase -i HEAD~4
 before you open the PR, squash those commits on feature/user-profile.
 4 commits for one feature is noise. make it one clean commit.
 
+[Marcus, after_command_without: "commit" without: "rebase", variant: warning]
+more commits? that's the opposite of cleanup. use git rebase -i to squash them down.
+
 [Marcus, after_command: "rebase"]
 better.
 ```
+
+Note the `after_command_without` trigger: the warning fires when the player commits without having used rebase, nudging them toward the correct approach. It disappears once they use `git rebase`.
 
 ---
 

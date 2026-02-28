@@ -80,6 +80,12 @@ export const level2_03: Scenario = {
     remoteBranches: ['develop'],
     head: { type: 'branch', name: 'develop' },
     workingTreeClean: true,
+    descriptions: {
+      branches: { develop: 'fast-forward merged with feature/dark-mode' },
+      remoteBranches: { develop: 'pushed to remote' },
+      head: 'on develop',
+      workingTree: 'no uncommitted changes',
+    },
   },
 
   slackThread: [

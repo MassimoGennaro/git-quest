@@ -85,6 +85,8 @@ Files animate (highlight) when they transition between states after a command.
 - Messages appear at level start; some are triggered by player actions mid-level
 - Characters have names, avatars (initials + color), and consistent personalities
 - Panel can be collapsed to a single-line summary to give more graph space
+- **Warning messages** render with amber left border and tinted background when the player goes off-track on constrained levels (e.g., using `merge` when the level requires `cherry-pick`)
+- 6 trigger types: `level_start`, `after_command`, `after_command_without`, `after_branch_created`, `after_commit`, `conflict_triggered`
 
 ### 3.5 Terminal
 - Always visible at the bottom
@@ -200,10 +202,13 @@ A level is won when **all** checks pass:
 2. **Branch advancement** — each target branch that existed at level start must have a different tip hash than it started with (i.e., the player did work on it). New branches just need to exist.
 3. **HEAD position** — HEAD matches the target (attached to the right branch, or detached at the right commit)
 4. **Working tree clean** — no staged, modified, or untracked files (unless the scenario explicitly allows them)
+5. **Command constraints** (optional) — if the level defines `requiredCommands`, every listed subcommand must appear in the player's command history. If it defines `forbiddenCommands`, none of the listed subcommands may appear.
 
-**Commit messages are NOT checked.** The win condition verifies structural properties only — branch names, advancement from starting state, HEAD, and working tree cleanliness. This allows players creative freedom in their commit messages.
+**Commit messages are NOT checked.** The win condition verifies structural properties and command usage only — branch names, advancement from starting state, HEAD, working tree cleanliness, and command constraints. This allows players creative freedom in their commit messages.
 
-The ghost overlay in the graph provides a continuous visual indication of how close the player is. Branch labels in the ghost show checkmarks when the corresponding branch has advanced from its starting state.
+Command names are tracked at the subcommand level (e.g., `'commit'`, `'cherry-pick'`), not including flags. This means `git commit --amend` is tracked as `'commit'`.
+
+The ghost overlay in the graph provides a continuous visual indication of how close the player is. Branch labels in the ghost show checkmarks when the corresponding branch has advanced from its starting state. Required and forbidden commands are shown with check/cross indicators.
 
 ---
 
@@ -214,11 +219,13 @@ The ghost overlay in the graph provides a continuous visual indication of how cl
 - Full-screen level selector with difficulty grouping, star display, and best move tracking
 - SVG graph renderer with ghost overlay
 - Working tree panel (staged / modified / untracked / conflicted)
-- Slack panel with triggered messages (5 trigger types)
+- Slack panel with triggered messages (6 trigger types, including warning variant)
 - Terminal with command history (↑/↓)
 - Simulation engine: 14 git commands — `add`, `branch`, `checkout`, `cherry-pick`, `commit`, `diff`, `log`, `merge`, `push`, `rebase` (regular + interactive), `reflog`, `reset`, `stash`, `status`
 - Interactive rebase picker UI (pick / squash / drop)
 - Three-panel merge conflict editor (ours | result | theirs, with free-form editing)
+- Command constraint system — `requiredCommands` / `forbiddenCommands` on 7 levels to prevent bypassing intended git concepts
+- Warning Slack messages — amber-styled nudges that fire when players go off-track on constrained levels
 - Local progress storage (`localStorage`) — stars and best move count per level
 - Undo last command + retry level
 - Move counter with par-based color coding

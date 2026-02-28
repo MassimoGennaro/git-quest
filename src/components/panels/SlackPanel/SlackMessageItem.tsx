@@ -18,9 +18,18 @@ interface SlackMessageItemProps {
 
 export function SlackMessageItem({ message }: SlackMessageItemProps) {
   const config = CHARACTER_CONFIG[message.from];
+  const isWarning = message.variant === 'warning';
+
+  const containerClasses = isWarning
+    ? 'flex gap-2 px-3 py-2 hover:bg-amber-500/10 transition-colors border-l-2 border-amber-500 bg-amber-500/5'
+    : 'flex gap-2 px-3 py-2 hover:bg-panel-800/50 transition-colors';
+
+  const textClasses = isWarning
+    ? 'text-sm text-amber-300/90 leading-relaxed whitespace-pre-wrap break-words'
+    : 'text-sm text-panel-400 leading-relaxed whitespace-pre-wrap break-words';
 
   return (
-    <div className="flex gap-2 px-3 py-2 hover:bg-panel-800/50 transition-colors">
+    <div className={containerClasses}>
       {/* Avatar */}
       <div
         className={`${config.color} border ${config.borderColor} w-8 h-8 rounded-full flex items-center justify-center text-gray-200 text-sm font-bold flex-shrink-0 mt-0.5`}
@@ -33,7 +42,7 @@ export function SlackMessageItem({ message }: SlackMessageItemProps) {
         <span className="text-sm font-bold text-gray-200">
           {config.displayName}
         </span>
-        <p className="text-sm text-panel-400 leading-relaxed whitespace-pre-wrap break-words">
+        <p className={textClasses}>
           {message.text}
         </p>
       </div>

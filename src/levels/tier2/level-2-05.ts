@@ -78,6 +78,11 @@ export const level2_05: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    descriptions: {
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'no uncommitted changes',
+    },
   },
 
   slackThread: [

@@ -16,7 +16,7 @@ export const level3_04: Scenario = {
   description:
     'Undo the last commit with reset --soft, add a missing file, and recommit.',
   concepts: ['reset --soft'],
-  par: 3,
+  par: 4,
 
   startingState: {
     commits: {
@@ -102,6 +102,14 @@ export const level3_04: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: true,
+    requiredCommands: ['reset'],
+    descriptions: {
+      branches: { main: 'recommitted with validate.test.js included' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'all files committed',
+      requiredCommands: { reset: 'undo the last commit with reset --soft' },
+    },
   },
 
   slackThread: [
@@ -109,6 +117,12 @@ export const level3_04: Scenario = {
       from: 'sarah',
       text: "you committed validate.js but forgot to include validate.test.js in the same commit. use reset --soft to undo the commit, add the test file, and recommit both together. then push.",
       trigger: { type: 'level_start' },
+    },
+    {
+      from: 'alex',
+      text: "adding more files won't fix the old commit. use git reset --soft HEAD~1 to undo it first, then recommit with everything included.",
+      trigger: { type: 'after_command_without', command: 'add', without: 'reset' },
+      variant: 'warning',
     },
     {
       from: 'alex',

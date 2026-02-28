@@ -25,6 +25,7 @@ export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
 export type SlackTrigger =
   | { type: 'level_start' }
   | { type: 'after_command'; command: string }
+  | { type: 'after_command_without'; command: string; without: string }
   | { type: 'after_branch_created'; name: string }
   | { type: 'after_commit' }
   | { type: 'conflict_triggered' };
@@ -34,6 +35,8 @@ export interface SlackMessage {
   from: 'alex' | 'sarah' | 'marcus';
   text: string;
   trigger: SlackTrigger;
+  /** Visual variant — 'warning' renders with amber styling for nudges/alerts */
+  variant?: 'normal' | 'warning';
 }
 
 /**
@@ -41,6 +44,22 @@ export interface SlackMessage {
  * Only checks structural properties (branch existence, HEAD, working tree) —
  * commit messages are NOT verified.
  */
+/** Per-item descriptions shown in the target state overlay */
+export interface TargetDescriptions {
+  /** Description for each local branch, keyed by branch name */
+  branches?: Record<string, string>;
+  /** Description for each remote branch, keyed by branch name */
+  remoteBranches?: Record<string, string>;
+  /** Description for the expected HEAD position */
+  head?: string;
+  /** Description for the working tree requirement */
+  workingTree?: string;
+  /** Description for each required command, keyed by command name */
+  requiredCommands?: Record<string, string>;
+  /** Description for each forbidden command, keyed by command name */
+  forbiddenCommands?: Record<string, string>;
+}
+
 export interface TargetStateSpec {
   /** Local branch names that must exist */
   branches: string[];
@@ -50,6 +69,12 @@ export interface TargetStateSpec {
   head: HeadState;
   /** Whether the working tree must be clean (no staged, modified, or untracked files) */
   workingTreeClean: boolean;
+  /** Git subcommands that MUST appear in the player's command history to win */
+  requiredCommands?: string[];
+  /** Git subcommands that must NOT appear in the player's command history */
+  forbiddenCommands?: string[];
+  /** Optional human-readable descriptions for each target requirement */
+  descriptions?: TargetDescriptions;
 }
 
 /** A complete level definition */

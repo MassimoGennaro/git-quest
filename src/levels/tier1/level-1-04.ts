@@ -64,6 +64,12 @@ export const level1_04: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: false,
+    descriptions: {
+      branches: { main: 'commit with config.js only' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'secrets.env unstaged, not committed',
+    },
   },
 
   slackThread: [

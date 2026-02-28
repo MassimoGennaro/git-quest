@@ -14,7 +14,7 @@ export const level3_05: Scenario = {
   description:
     'Unstage all files, then selectively re-stage only the ones that belong in this commit.',
   concepts: ['reset', 'add', 'selective staging'],
-  par: 4,
+  par: 5,
 
   startingState: {
     commits: {
@@ -85,6 +85,12 @@ export const level3_05: Scenario = {
     remoteBranches: ['main'],
     head: { type: 'branch', name: 'main' },
     workingTreeClean: false,
+    descriptions: {
+      branches: { main: 'commit with stats.js and stats.test.js only' },
+      remoteBranches: { main: 'pushed to remote' },
+      head: 'on main',
+      workingTree: 'debug.log and temp-notes.txt left out',
+    },
   },
 
   slackThread: [
