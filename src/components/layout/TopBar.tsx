@@ -1,9 +1,10 @@
-// components/layout/TopBar.tsx — Top bar with branch indicator, level info, hints, undo, and retry
+// components/layout/TopBar.tsx — Top bar with branch indicator, level info, hints, undo, retry, and levels button
 
 import { useState } from 'react';
 
 import type { RepoState } from '@/engine/types';
 import type { Scenario } from '@/levels/schema';
+import { TIER_TO_DIFFICULTY, DIFFICULTY_LABELS } from '@/levels/schema';
 
 interface TopBarProps {
   state: RepoState;
@@ -12,7 +13,15 @@ interface TopBarProps {
   onRetry: () => void;
   onUndo: () => void;
   canUndo: boolean;
+  onShowSelector: () => void;
 }
+
+const DIFFICULTY_BADGE_COLORS: Record<string, string> = {
+  easy: 'bg-green-600/60 text-green-200',
+  medium: 'bg-blue-600/60 text-blue-200',
+  hard: 'bg-orange-600/60 text-orange-200',
+  pro: 'bg-red-600/60 text-red-200',
+};
 
 export function TopBar({
   state,
@@ -21,6 +30,7 @@ export function TopBar({
   onRetry,
   onUndo,
   canUndo,
+  onShowSelector,
 }: TopBarProps) {
   const [showHints, setShowHints] = useState(false);
 
@@ -29,7 +39,11 @@ export function TopBar({
       ? state.head.name
       : `detached @ ${state.head.hash.slice(0, 7)}`;
 
-  const tierLabel = `Tier ${scenario.tier}`;
+  const difficulty = TIER_TO_DIFFICULTY[scenario.tier];
+  const difficultyLabel = difficulty ? DIFFICULTY_LABELS[difficulty] : `Tier ${scenario.tier}`;
+  const badgeColor = difficulty
+    ? DIFFICULTY_BADGE_COLORS[difficulty] ?? 'bg-gray-600 text-gray-200'
+    : 'bg-gray-600 text-gray-200';
 
   // Color the move counter: green at/under par, yellow at par+1..par+2, red beyond
   const isOverPar = commandCount > scenario.par;
@@ -45,8 +59,15 @@ export function TopBar({
   return (
     <>
       <div className="flex items-center justify-between px-4 py-2 bg-gray-800 border-b border-gray-700">
-        {/* Left: branch indicator + move counter */}
+        {/* Left: levels button + branch indicator + move counter */}
         <div className="flex items-center gap-3">
+          <button
+            onClick={onShowSelector}
+            className="text-sm font-mono px-2 py-0.5 rounded text-gray-300 hover:text-white hover:bg-gray-700 transition-colors border border-gray-600 hover:border-gray-500"
+            title="Back to level list"
+          >
+            Levels
+          </button>
           <span className="text-blue-400 font-mono text-sm">
             &#x2387; {branchDisplay}
           </span>
@@ -55,9 +76,13 @@ export function TopBar({
           </span>
         </div>
 
-        {/* Center: level title + tier */}
+        {/* Center: difficulty badge + level title + par */}
         <div className="flex items-center gap-2">
-          <span className="text-xs text-gray-500 font-mono">{tierLabel}</span>
+          <span
+            className={`text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded ${badgeColor}`}
+          >
+            {difficultyLabel}
+          </span>
           <span className="text-gray-100 font-bold tracking-wide">
             {scenario.title}
           </span>

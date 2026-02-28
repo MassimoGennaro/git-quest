@@ -10,6 +10,8 @@ export const level1_01: Scenario = {
   id: 'tier1-01-first-commit',
   tier: 1,
   title: 'First Commit',
+  description: 'Stage a new file, commit it, and push to the remote.',
+  concepts: ['add', 'commit', 'push'],
   par: 3,
 
   startingState: {
@@ -38,6 +40,7 @@ export const level1_01: Scenario = {
     },
     remote: { name: 'origin', branches: { main: initialHash } },
     stash: [],
+    reflog: [],
   },
 
   targetState: {

@@ -5,19 +5,20 @@ import type { ParseResult } from './types';
 /** List of git subcommands the engine supports */
 const SUPPORTED_COMMANDS = new Set([
   'add',
-  'commit',
-  'status',
-  'log',
   'branch',
   'checkout',
-  'merge',
-  'push',
-  'pull',
-  'stash',
-  'reset',
-  'rebase',
   'cherry-pick',
+  'commit',
   'diff',
+  'log',
+  'merge',
+  'pull',
+  'push',
+  'rebase',
+  'reflog',
+  'reset',
+  'stash',
+  'status',
 ]);
 
 /**

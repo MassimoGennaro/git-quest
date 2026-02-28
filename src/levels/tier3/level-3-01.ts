@@ -16,6 +16,8 @@ export const level3_01: Scenario = {
   id: 'tier3-01-merge-conflict',
   tier: 3,
   title: 'Merge Conflict',
+  description: 'Merge a branch with a conflict and resolve it.',
+  concepts: ['merge', 'conflict resolution', 'add', 'commit'],
   par: 5,
 
   startingState: {
@@ -66,6 +68,7 @@ export const level3_01: Scenario = {
       },
     },
     stash: [],
+    reflog: [],
   },
 
   targetState: {

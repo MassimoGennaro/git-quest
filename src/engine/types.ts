@@ -25,6 +25,10 @@ export interface RepoState {
   workingTree: WorkingTreeState;
   remote: RemoteState;
   stash: StashEntry[];
+  /** Tracks the merge-in-progress parent hash (set during conflicted merge) */
+  mergeHead?: string;
+  /** Reflog entries tracking HEAD movements */
+  reflog: ReflogEntry[];
 }
 
 export type HeadState =
@@ -57,6 +61,14 @@ export interface StashEntry {
   message: string;
 }
 
+/** A single reflog entry recording a HEAD movement */
+export interface ReflogEntry {
+  /** The hash HEAD pointed to after this action */
+  hash: string;
+  /** Human-readable description, e.g. "commit: add README" */
+  description: string;
+}
+
 /** Result of parsing a command string */
 export interface ParsedCommand {
   command: string;
@@ -82,6 +94,8 @@ export interface CommandResult {
   output: string;
   newState: RepoState;
   conflictsTriggered?: ConflictSet;
+  /** If set, signals the UI to open the interactive rebase picker */
+  rebaseInteractive?: RebaseInteractiveInfo;
 }
 
 /** Set of files with merge conflicts */
@@ -91,6 +105,14 @@ export interface ConflictInfo {
   ours: string;
   theirs: string;
   ancestor: string;
+}
+
+/** Info passed to the UI for interactive rebase */
+export interface RebaseInteractiveInfo {
+  /** Commits eligible for squash/pick/drop, oldest first */
+  commits: { hash: string; message: string }[];
+  /** The hash to replay onto */
+  ontoHash: string;
 }
 
 /** Type for a command handler function */

@@ -12,6 +12,8 @@ export const level2_03: Scenario = {
   id: 'tier2-03-fast-forward-merge',
   tier: 2,
   title: 'Fast-Forward Merge',
+  description: 'Merge a feature branch into develop using fast-forward.',
+  concepts: ['checkout', 'merge', 'push'],
   par: 3,
 
   startingState: {
@@ -70,6 +72,7 @@ export const level2_03: Scenario = {
       branches: { main: hash1, develop: hash1 },
     },
     stash: [],
+    reflog: [],
   },
 
   targetState: {

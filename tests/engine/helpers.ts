@@ -12,6 +12,7 @@ export function createEmptyState(): RepoState {
     workingTree: { files: {} },
     remote: { name: 'origin', branches: {} },
     stash: [],
+    reflog: [],
   };
 }
 
@@ -41,5 +42,6 @@ export function createStateWithCommit(
     workingTree: { files: {} },
     remote: { name: 'origin', branches: { main: commit.hash } },
     stash: [],
+    reflog: [],
   };
 }

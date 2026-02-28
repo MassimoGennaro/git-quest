@@ -26,35 +26,38 @@ src/
 │   ├── refs.ts           # Branch and HEAD management
 │   ├── index.ts          # Staging area operations
 │   ├── workingTree.ts    # Working tree state
+│   ├── mergeUtils.ts     # Shared merge/rebase helpers (ancestor, conflict detection, tree merge)
 │   ├── commands/         # One file per implemented command
 │   │   ├── add.ts
 │   │   ├── branch.ts
 │   │   ├── checkout.ts
+│   │   ├── cherryPick.ts
 │   │   ├── commit.ts
+│   │   ├── diff.ts
 │   │   ├── log.ts
 │   │   ├── merge.ts
 │   │   ├── push.ts
+│   │   ├── rebase.ts     # Regular + interactive rebase (exports rebaseApply for UI)
+│   │   ├── reflog.ts
+│   │   ├── reset.ts
+│   │   ├── stash.ts
 │   │   └── status.ts
 │   ├── parser.ts         # Command string → structured command object
-│   └── runner.ts         # Dispatch parsed command → correct handler
+│   └── runner.ts         # Dispatch parsed command → correct handler (14 commands)
 │
 ├── levels/               # Data-driven level definitions
-│   ├── schema.ts         # TypeScript types for scenario files
+│   ├── schema.ts         # TypeScript types for scenario files + Difficulty mapping
 │   ├── winCondition.ts   # checkWinCondition(state, target, startingState)
 │   ├── index.ts          # Level registry (ALL_LEVELS, loadScenario, getNextLevel)
-│   ├── tier1/
-│   │   └── level-1-01.ts
-│   ├── tier2/
-│   │   └── level-2-03.ts
-│   ├── tier3/
-│   │   └── level-3-01.ts
-│   └── tier4/
-│       └── level-4-01.ts
+│   ├── tier1/            # Levels 1-01 through 1-05
+│   ├── tier2/            # Levels 2-01 through 2-05
+│   ├── tier3/            # Levels 3-01 through 3-05
+│   └── tier4/            # Levels 4-01 through 4-05
 │
 ├── components/
 │   ├── layout/
-│   │   ├── TopBar.tsx        # Branch indicator, move counter, undo/retry/hints
-│   │   └── AppLayout.tsx     # Main layout, wires all panels + overlays
+│   │   ├── TopBar.tsx        # Levels button, branch indicator, difficulty badge, move counter, undo/retry/hints
+│   │   └── AppLayout.tsx     # Main layout, wires all panels + overlays (conflict, rebase, level complete)
 │   └── panels/
 │       ├── GraphPanel/
 │       │   ├── GraphPanel.tsx
@@ -69,21 +72,25 @@ src/
 │       ├── ConflictPicker/
 │       │   └── ConflictPicker.tsx    # Three-panel merge editor
 │       ├── LevelComplete/
-│       │   └── LevelComplete.tsx     # Score + stars + next/retry
+│       │   └── LevelComplete.tsx     # Score + stars + Level List / Retry / Next Level
+│       ├── LevelSelector/
+│       │   └── LevelSelector.tsx     # Full-screen level selector with difficulty grouping
+│       ├── RebasePicker/
+│       │   └── RebasePicker.tsx      # Interactive rebase commit picker (pick/squash/drop)
 │       └── Terminal/
 │           ├── Terminal.tsx
 │           ├── TerminalInput.tsx
 │           └── TerminalOutput.tsx
 │
 ├── hooks/
-│   ├── useGitEngine.ts   # Engine-to-React bridge (execute, undo, patchState, tracking)
+│   ├── useGitEngine.ts   # Engine-to-React bridge (execute, undo, patchState, rebase state, tracking)
 │   ├── useLevel.ts       # Loads scenario, checks win condition, triggers messages
 │   └── useTerminal.ts    # Input history, keyboard handling
 │
 ├── context/
-│   └── GameContext.tsx    # Global game state (current level, score, retry)
+│   └── GameContext.tsx    # Global game state (view routing, level switching, progress persistence)
 │
-└── App.tsx               # GameProvider > GameSession > GameSessionInner
+└── App.tsx               # GameProvider > GameRouter > LevelSelectorView | GameSession
 ```
 
 ---
@@ -129,6 +136,12 @@ export interface RepoState {
 
   // Stash stack
   stash: StashEntry[];
+
+  // Merge-in-progress parent hash (set during conflicted merge)
+  mergeHead?: string;
+
+  // Reflog entries tracking HEAD movements
+  reflog: ReflogEntry[];
 }
 
 export type HeadState =
@@ -194,6 +207,7 @@ export type CommandResult = {
   output: string;          // text to display in terminal
   newState: RepoState;     // the mutated state (or unchanged if error)
   conflictsTriggered?: ConflictSet;  // if a merge produced conflicts
+  rebaseInteractive?: RebaseInteractiveInfo;  // signals UI to open interactive rebase picker
 };
 
 export function runCommand(
@@ -234,10 +248,18 @@ They look realistic but are not real SHA1. This is fine — the game teaches con
 ```typescript
 // levels/schema.ts
 
+/** Difficulty category, mapped from tier (1=easy, 2=medium, 3=hard, 4=pro) */
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'pro';
+
+export const TIER_TO_DIFFICULTY: Record<1 | 2 | 3 | 4, Difficulty>;
+export const DIFFICULTY_LABELS: Record<Difficulty, string>;
+
 export interface Scenario {
   id: string;                     // e.g. "tier1-01-first-commit"
   tier: 1 | 2 | 3 | 4;
   title: string;                  // e.g. "First Commit"
+  description: string;            // short description shown in level selector
+  concepts: string[];             // git concepts/commands this level teaches
   par: number;                    // minimum commands to complete
 
   startingState: RepoState;       // fully defined initial repo state
@@ -335,6 +357,7 @@ function useGitEngine(initialState: RepoState) {
     state, log, execute,
     commandCount, executedCommands, createdBranches, commitCount, hasConflicts,
     reset, patchState, undo, canUndo,
+    lastRebaseInteractive, clearRebaseInteractive,
   };
 }
 ```
@@ -423,12 +446,18 @@ gitquest/
     │   ├── branch.test.ts         # 9 tests
     │   ├── checkout.test.ts       # 9 tests
     │   ├── merge.test.ts          # 12 tests
-    │   └── push.test.ts           # 6 tests
+    │   ├── push.test.ts           # 6 tests
+    │   ├── diff.test.ts           # 12 tests
+    │   ├── stash.test.ts          # 16 tests
+    │   ├── reset.test.ts          # 15 tests
+    │   ├── reflog.test.ts         # 5 tests
+    │   ├── cherryPick.test.ts     # 8 tests
+    │   └── rebase.test.ts         # 16 tests
     └── levels/
         └── winCondition.test.ts   # 26 tests
 ```
 
-**Total: 123 tests across 11 test files.**
+**Total: 195 tests across 17 test files.**
 
 ---
 
@@ -454,3 +483,11 @@ All 12 steps have been completed for the MVP:
 - **Retry level** — bumps `sessionKey` in `GameContext` for full remount
 - **Move counter** — `N/par moves` display with color coding in TopBar
 - **Three-panel merge editor** — replaced simple A/B picker with ours|result|theirs editor
+- **6 new engine commands** — `diff`, `stash`, `reset`, `reflog`, `cherry-pick`, `rebase` (regular + interactive)
+- **Shared merge utilities** — `mergeUtils.ts` extracted from merge.ts, reused by cherry-pick and rebase
+- **20 levels across 4 tiers** — 5 per tier (Easy, Medium, Hard, Pro), each teaching one git concept
+- **Full-screen level selector** — difficulty grouping, star display, best move tracking
+- **Interactive rebase picker UI** — pick/squash/drop cycling with modal overlay
+- **Enhanced progress persistence** — `localStorage` stores stars AND best move count per level
+- **View routing** — App.tsx routes between LevelSelector and GameSession views
+- **Difficulty system** — Tier → Difficulty mapping (Easy/Medium/Hard/Pro) with color-coded badges

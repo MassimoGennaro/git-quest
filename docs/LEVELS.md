@@ -265,8 +265,6 @@ workingTreeClean: true
 
 Narrative (not checked by win condition):
   Player squashes 4 WIP commits into 1 clean commit via interactive rebase.
-
-NOTE: This level is a placeholder — git rebase -i is not yet implemented in the engine.
 ```
 
 **Par solution:**
@@ -300,15 +298,15 @@ TIER 1 — Basics
 
 TIER 2 — Branching
   2-01  New Feature Branch         (checkout -b, push)
-  2-02  Switch and Pull            (checkout, pull)
+  2-02  Switch and Commit          (checkout, add, commit)
   2-03  Fast-Forward Merge         (merge, push)
   2-04  Stash Your Work            (stash, stash pop)
   2-05  Delete a Branch            (branch -d)
 
 TIER 3 — Conflicts & Recovery
-  3-01  First Conflict             (merge conflict, three-panel editor, add, commit)
+  3-01  Merge Conflict             (merge conflict, three-panel editor, add, commit)
   3-02  Conflict: No Hints         (conflict with no Slack guidance)
-  3-03  Stash Before Pull          (stash, pull, stash pop, resolve)
+  3-03  Stash Before Merge         (stash, merge, stash pop, resolve)
   3-04  Fix the Last Commit        (commit --amend after push — force push warning)
   3-05  Partial Reset              (reset HEAD, re-stage selectively)
 

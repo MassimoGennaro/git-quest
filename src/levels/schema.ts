@@ -2,6 +2,25 @@
 
 import type { HeadState, RepoState } from '@/engine/types';
 
+/** Difficulty category, mapped from tier (1=easy, 2=medium, 3=hard, 4=pro) */
+export type Difficulty = 'easy' | 'medium' | 'hard' | 'pro';
+
+/** Map tier number to difficulty label */
+export const TIER_TO_DIFFICULTY: Record<1 | 2 | 3 | 4, Difficulty> = {
+  1: 'easy',
+  2: 'medium',
+  3: 'hard',
+  4: 'pro',
+};
+
+/** Human-readable labels for each difficulty */
+export const DIFFICULTY_LABELS: Record<Difficulty, string> = {
+  easy: 'Easy',
+  medium: 'Medium',
+  hard: 'Hard',
+  pro: 'Pro',
+};
+
 /** Trigger condition for when a Slack message should appear */
 export type SlackTrigger =
   | { type: 'level_start' }
@@ -41,6 +60,10 @@ export interface Scenario {
   tier: 1 | 2 | 3 | 4;
   /** Display name, e.g. "First Commit" */
   title: string;
+  /** Short description shown in level selector */
+  description: string;
+  /** Git concepts/commands this level teaches */
+  concepts: string[];
   /** Minimum commands a competent developer needs */
   par: number;
   /** Fully defined initial repo state */

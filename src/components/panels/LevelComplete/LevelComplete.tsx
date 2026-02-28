@@ -13,6 +13,8 @@ interface LevelCompleteProps {
   onNextLevel?: () => void;
   /** Callback to retry the level */
   onRetry: () => void;
+  /** Callback to go to the level list */
+  onShowSelector: () => void;
 }
 
 export function LevelComplete({
@@ -22,6 +24,7 @@ export function LevelComplete({
   par,
   onNextLevel,
   onRetry,
+  onShowSelector,
 }: LevelCompleteProps) {
   const stars = Array.from({ length: 3 }, (_, i) => i < score);
 
@@ -81,6 +84,12 @@ export function LevelComplete({
 
         {/* Actions */}
         <div className="px-6 pb-6 flex gap-3">
+          <button
+            onClick={onShowSelector}
+            className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-medium rounded transition-colors"
+          >
+            Level List
+          </button>
           <button
             onClick={onRetry}
             className="flex-1 px-4 py-2 bg-gray-700 hover:bg-gray-600 text-gray-200 text-sm font-medium rounded transition-colors"

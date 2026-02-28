@@ -15,6 +15,7 @@ describe('git log', () => {
       workingTree: { files: {} },
       remote: { name: 'origin', branches: {} },
       stash: [],
+      reflog: [],
     };
 
     const result = log([], {}, state);
@@ -89,6 +90,7 @@ describe('git log', () => {
       workingTree: { files: {} },
       remote: { name: 'origin', branches: {} },
       stash: [],
+      reflog: [],
     };
 
     const result = log([], { oneline: true }, state);
@@ -132,6 +134,7 @@ describe('git log', () => {
       workingTree: { files: {} },
       remote: { name: 'origin', branches: {} },
       stash: [],
+      reflog: [],
     };
 
     const result = log([], { oneline: true }, state);

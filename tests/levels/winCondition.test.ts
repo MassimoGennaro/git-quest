@@ -32,6 +32,7 @@ function makeState(overrides: Partial<RepoState> = {}): RepoState {
     workingTree: { files: {} },
     remote: { name: 'origin', branches: {} },
     stash: [],
+    reflog: [],
     ...overrides,
   };
 }
@@ -51,6 +52,7 @@ function makeStartingState(overrides: Partial<RepoState> = {}): RepoState {
     workingTree: { files: {} },
     remote: { name: 'origin', branches: {} },
     stash: [],
+    reflog: [],
     ...overrides,
   };
 }
@@ -433,6 +435,7 @@ describe('checkWinCondition', () => {
         workingTree: { files: {} },
         remote: { name: 'origin', branches: { main: commit2.hash } },
         stash: [],
+        reflog: [],
       };
       // Starting state: main and origin/main both at commit1
       const startingState: RepoState = {
@@ -443,6 +446,7 @@ describe('checkWinCondition', () => {
         workingTree: { files: {} },
         remote: { name: 'origin', branches: { main: commit1.hash } },
         stash: [],
+        reflog: [],
       };
       const target: TargetStateSpec = {
         branches: ['main'],
@@ -464,6 +468,7 @@ describe('checkWinCondition', () => {
         workingTree: { files: {} },
         remote: { name: 'origin', branches: { main: commit1.hash } },
         stash: [],
+        reflog: [],
       };
       const startingState: RepoState = { ...state };
       const target: TargetStateSpec = {
@@ -491,6 +496,7 @@ describe('checkWinCondition', () => {
         // Remote still at starting position
         remote: { name: 'origin', branches: { main: commit1.hash } },
         stash: [],
+        reflog: [],
       };
       const startingState: RepoState = {
         commits: { [commit1.hash]: commit1 },
@@ -500,6 +506,7 @@ describe('checkWinCondition', () => {
         workingTree: { files: {} },
         remote: { name: 'origin', branches: { main: commit1.hash } },
         stash: [],
+        reflog: [],
       };
       const target: TargetStateSpec = {
         branches: ['main'],

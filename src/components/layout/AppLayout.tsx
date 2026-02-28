@@ -4,6 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 
 import type { LevelState } from '@/hooks/useLevel';
 import { resolveConflict } from '@/components/panels/ConflictPicker/ConflictPicker';
+import { rebaseApply } from '@/engine/commands/rebase';
+import type { RebaseAction } from '@/components/panels/RebasePicker/RebasePicker';
 import { TopBar } from './TopBar';
 import { GraphPanel } from '../panels/GraphPanel/GraphPanel';
 import { WorkingTreePanel } from '../panels/WorkingTreePanel/WorkingTreePanel';
@@ -11,16 +13,18 @@ import { Terminal } from '../panels/Terminal/Terminal';
 import { SlackPanel } from '../panels/SlackPanel/SlackPanel';
 import { ConflictPicker } from '../panels/ConflictPicker/ConflictPicker';
 import { LevelComplete } from '../panels/LevelComplete/LevelComplete';
+import { RebasePicker } from '../panels/RebasePicker/RebasePicker';
 
 interface AppLayoutProps {
   level: LevelState;
   onNextLevel: () => void;
   onRetry: () => void;
+  onShowSelector: () => void;
 }
 
-export function AppLayout({ level, onNextLevel, onRetry }: AppLayoutProps) {
+export function AppLayout({ level, onNextLevel, onRetry, onShowSelector }: AppLayoutProps) {
   const { engine, scenario, isWon, visibleMessages, score } = level;
-  const { state, log, execute } = engine;
+  const { state, log, execute, lastRebaseInteractive, clearRebaseInteractive } = engine;
 
   // Track which conflict file is currently being shown in the picker.
   // null means no picker is open.
@@ -68,6 +72,21 @@ export function AppLayout({ level, onNextLevel, onRetry }: AppLayoutProps) {
     setActiveConflict(null);
   }, []);
 
+  // Handle interactive rebase apply
+  const handleRebaseApply = useCallback(
+    (actions: Array<{ hash: string; action: RebaseAction }>) => {
+      if (!lastRebaseInteractive) return;
+      const result = rebaseApply(state, lastRebaseInteractive.ontoHash, actions);
+      engine.patchState(result.newState);
+      clearRebaseInteractive();
+    },
+    [state, engine, lastRebaseInteractive, clearRebaseInteractive],
+  );
+
+  const handleRebaseCancel = useCallback(() => {
+    clearRebaseInteractive();
+  }, [clearRebaseInteractive]);
+
   const activeConflictFile =
     activeConflict ? state.workingTree.files[activeConflict] : undefined;
 
@@ -81,6 +100,7 @@ export function AppLayout({ level, onNextLevel, onRetry }: AppLayoutProps) {
         onRetry={onRetry}
         onUndo={engine.undo}
         canUndo={engine.canUndo}
+        onShowSelector={onShowSelector}
       />
 
       {/* Slack Panel */}
@@ -114,6 +134,16 @@ export function AppLayout({ level, onNextLevel, onRetry }: AppLayoutProps) {
           par={scenario.par}
           onNextLevel={onNextLevel}
           onRetry={onRetry}
+          onShowSelector={onShowSelector}
+        />
+      )}
+
+      {/* Interactive Rebase Picker modal */}
+      {lastRebaseInteractive && (
+        <RebasePicker
+          info={lastRebaseInteractive}
+          onApply={handleRebaseApply}
+          onCancel={handleRebaseCancel}
         />
       )}
     </div>

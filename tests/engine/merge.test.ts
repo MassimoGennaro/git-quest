@@ -48,6 +48,7 @@ function createFastForwardState(): RepoState {
     workingTree: { files: {} },
     remote: { name: 'origin', branches: {} },
     stash: [],
+    reflog: [],
   };
 }
 
@@ -82,6 +83,7 @@ function createDivergentState(): RepoState {
     workingTree: { files: {} },
     remote: { name: 'origin', branches: {} },
     stash: [],
+    reflog: [],
   };
 }
 
@@ -118,6 +120,7 @@ function createConflictState(): RepoState {
     workingTree: { files: {} },
     remote: { name: 'origin', branches: {} },
     stash: [],
+    reflog: [],
   };
 }
 

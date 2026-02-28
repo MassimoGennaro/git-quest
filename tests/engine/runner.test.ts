@@ -56,7 +56,7 @@ describe('runCommand', () => {
 
   it('should return error for unimplemented commands', () => {
     const state = createStateWithCommit('init');
-    const parseResult = parseCommand('git stash');
+    const parseResult = parseCommand('git pull');
     if (!parseResult.success) throw new Error('parse failed');
     const result = runCommand(parseResult.parsed, state);
     expect(result.success).toBe(false);

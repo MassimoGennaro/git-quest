@@ -128,6 +128,7 @@ describe('git commit', () => {
       workingTree: { files: {} },
       remote: { name: 'origin', branches: {} },
       stash: [],
+      reflog: [],
     };
 
     const result = commit([], { m: 'initial commit' }, state);
@@ -165,6 +166,7 @@ describe('git commit', () => {
         workingTree: { files: {} },
         remote: { name: 'origin', branches: {} },
         stash: [],
+        reflog: [],
       };
 
       const result = commit([], { amend: true, m: 'fix' }, state);

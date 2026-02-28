@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useRef } from 'react';
 
-import type { RepoState, ConflictSet } from '@/engine/types';
+import type { RepoState, ConflictSet, RebaseInteractiveInfo } from '@/engine/types';
 import { parseCommand } from '@/engine/parser';
 import { runCommand } from '@/engine/runner';
 
@@ -52,6 +52,10 @@ export interface GitEngine {
   undo: () => void;
   /** Whether there is a command to undo */
   canUndo: boolean;
+  /** Set when an interactive rebase command is executed; cleared after apply/cancel */
+  lastRebaseInteractive: RebaseInteractiveInfo | null;
+  /** Clear the interactive rebase signal (called after apply or cancel) */
+  clearRebaseInteractive: () => void;
 }
 
 export function useGitEngine(initialState: RepoState): GitEngine {
@@ -70,6 +74,14 @@ export function useGitEngine(initialState: RepoState): GitEngine {
   // Undo history: stack of snapshots taken before each successful command
   const historyRef = useRef<EngineSnapshot[]>([]);
   const [canUndo, setCanUndo] = useState(false);
+
+  // Interactive rebase state: set when a command returns rebaseInteractive
+  const [lastRebaseInteractive, setLastRebaseInteractive] =
+    useState<RebaseInteractiveInfo | null>(null);
+
+  const clearRebaseInteractive = useCallback(() => {
+    setLastRebaseInteractive(null);
+  }, []);
 
   const execute = useCallback(
     (input: string) => {
@@ -116,6 +128,11 @@ export function useGitEngine(initialState: RepoState): GitEngine {
       setCommandCount((c) => c + 1);
       setExecutedCommands((prev) => [...prev, parsed.parsed.command]);
 
+      // Signal the UI if the command triggered an interactive rebase
+      if (result.rebaseInteractive) {
+        setLastRebaseInteractive(result.rebaseInteractive);
+      }
+
       // Track new branches created
       const branchesAfter = Object.keys(result.newState.branches);
       for (const branch of branchesAfter) {
@@ -143,6 +160,7 @@ export function useGitEngine(initialState: RepoState): GitEngine {
     setCreatedBranches(new Set());
     historyRef.current = [];
     setCanUndo(false);
+    setLastRebaseInteractive(null);
   }, []);
 
   // Patch state without resetting any tracking (used for conflict resolution)
@@ -184,5 +202,7 @@ export function useGitEngine(initialState: RepoState): GitEngine {
     patchState,
     undo,
     canUndo,
+    lastRebaseInteractive,
+    clearRebaseInteractive,
   };
 }

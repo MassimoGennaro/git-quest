@@ -52,8 +52,10 @@ The git graph is the game board. Commands cause it to animate in real time. Winn
 ```
 
 ### 3.1 Top Bar
+- **Levels button:** navigates back to the full-screen level selector
 - Current branch indicator (updates live) — shows branch name or `detached @ <hash>`
-- Game title, tier label, level name, and par value
+- **Difficulty badge:** color-coded label (Easy=green, Medium=blue, Hard=orange, Pro=red)
+- Game title, level name, and par value
 - **Move counter:** displays `N/par moves` with color coding (green at/under par, yellow par+1–2, red beyond par+2)
 - **Undo button:** reverts the last command (disabled when no history)
 - **Retry button:** restarts the level from scratch
@@ -123,13 +125,13 @@ Score is stored in `localStorage` for MVP. Designed to plug into a remote leader
 **Sample task:** "create a branch off develop, do the work, merge it back"
 
 ### Tier 3 — Conflicts & Recovery
-**Operations introduced:** `merge` (with conflicts), `stash`, `commit --amend`, `reset HEAD <file>`, `diff`  
+**Operations introduced:** `merge` (with conflicts), `stash`, `commit --amend`, `reset HEAD <file>`, `diff`, `reset --soft/--mixed`  
 **Conflict resolution:** Three-panel merge editor, answer telegraphed in Slack  
 **Slack guidance:** hints at what to keep, not how  
 **Sample task:** "merge feature/auth into develop — there's a conflict in config.js, keep Sarah's version of the timeout"
 
 ### Tier 4 — Advanced
-**Operations introduced:** `rebase`, `cherry-pick`, `reset --hard/--soft`, `reflog`  
+**Operations introduced:** `rebase`, `rebase -i` (interactive), `cherry-pick`, `reset --hard/--soft`, `reflog`  
 **Conflict resolution:** Three-panel merge editor with no Slack hint  
 **Slack guidance:** describes outcome only ("make the history clean before the PR")  
 **Sample task:** "squash the last 3 commits and rebase onto main before opening the PR"
@@ -208,23 +210,25 @@ The ghost overlay in the graph provides a continuous visual indication of how cl
 ## 9. MVP Scope (Implemented)
 
 ### Included
-- 4 levels (one per tier: 1-01, 2-03, 3-01, 4-01)
+- 20 levels across 4 tiers (5 per tier: Easy, Medium, Hard, Pro)
+- Full-screen level selector with difficulty grouping, star display, and best move tracking
 - SVG graph renderer with ghost overlay
 - Working tree panel (staged / modified / untracked / conflicted)
 - Slack panel with triggered messages (5 trigger types)
 - Terminal with command history (↑/↓)
-- Simulation engine: `add`, `branch`, `checkout`, `commit`, `log`, `merge`, `push`, `status`
+- Simulation engine: 14 git commands — `add`, `branch`, `checkout`, `cherry-pick`, `commit`, `diff`, `log`, `merge`, `push`, `rebase` (regular + interactive), `reflog`, `reset`, `stash`, `status`
+- Interactive rebase picker UI (pick / squash / drop)
 - Three-panel merge conflict editor (ours | result | theirs, with free-form editing)
-- Local score storage (`localStorage`)
+- Local progress storage (`localStorage`) — stars and best move count per level
 - Undo last command + retry level
 - Move counter with par-based color coding
-- Level complete screen with star rating
+- Level complete screen with star rating + Level List / Retry / Next Level buttons
 
 ### Explicitly Out of Scope for MVP
 - GitHub auth
 - Leaderboard
 - Tab completion for branch names / filenames
-- `git rebase`, `git cherry-pick`, `git stash`, `git reset`, `git reflog`, `git bisect`
+- `git bisect`
 - Mobile layout
 - Community-authored levels
 

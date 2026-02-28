@@ -15,6 +15,8 @@ export const level4_01: Scenario = {
   id: 'tier4-01-the-cleanup',
   tier: 4,
   title: 'The Cleanup',
+  description: 'Squash messy WIP commits into one clean commit using interactive rebase.',
+  concepts: ['rebase -i', 'squash'],
   par: 4,
 
   startingState: {
@@ -107,6 +109,7 @@ export const level4_01: Scenario = {
       },
     },
     stash: [],
+    reflog: [],
   },
 
   targetState: {
@@ -129,7 +132,8 @@ export const level4_01: Scenario = {
   ],
 
   hints: [
-    'This level requires "git rebase -i" which is not yet implemented.',
-    'Stay tuned for an engine update!',
+    'Use "git rebase -i HEAD~4" to start an interactive rebase',
+    'Squash all commits into one clean commit',
+    'The UI will show a picker — squash the last 3 into the first',
   ],
 };

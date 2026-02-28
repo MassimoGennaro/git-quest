@@ -1,8 +1,31 @@
-// App.tsx — Root component: GameProvider + level session
+// App.tsx — Root component: view routing between LevelSelector and GameSession
 
 import { GameProvider, useGame } from '@/context/GameContext';
 import { useLevel } from '@/hooks/useLevel';
 import { AppLayout } from '@/components/layout/AppLayout';
+import { LevelSelector } from '@/components/panels/LevelSelector/LevelSelector';
+
+function GameRouter() {
+  const { view } = useGame();
+
+  if (view === 'selector') {
+    return <LevelSelectorView />;
+  }
+
+  return <GameSession />;
+}
+
+function LevelSelectorView() {
+  const { allLevels, progress, switchLevel } = useGame();
+
+  return (
+    <LevelSelector
+      levels={allLevels}
+      progress={progress}
+      onSelectLevel={switchLevel}
+    />
+  );
+}
 
 function GameSession() {
   const {
@@ -10,6 +33,7 @@ function GameSession() {
     goToNextLevel,
     retry,
     recordScore,
+    showSelector,
     sessionKey,
   } = useGame();
 
@@ -20,6 +44,7 @@ function GameSession() {
       onNextLevel={goToNextLevel}
       onRetry={retry}
       onRecordScore={recordScore}
+      onShowSelector={showSelector}
     />
   );
 }
@@ -30,11 +55,13 @@ function GameSessionInner({
   onNextLevel,
   onRetry,
   onRecordScore,
+  onShowSelector,
 }: {
   scenario: ReturnType<typeof useGame>['currentScenario'];
   onNextLevel: () => boolean;
   onRetry: () => void;
-  onRecordScore: (levelId: string, score: number) => void;
+  onRecordScore: (levelId: string, stars: number, moves: number) => void;
+  onShowSelector: () => void;
 }) {
   const level = useLevel(scenario);
 
@@ -48,8 +75,7 @@ function GameSessionInner({
 
   // Record score when level is won
   if (level.isWon) {
-    // This is safe because recordScore only updates if the score is better
-    onRecordScore(scenario.id, level.score);
+    onRecordScore(scenario.id, level.score, level.engine.commandCount);
   }
 
   return (
@@ -57,6 +83,7 @@ function GameSessionInner({
       level={level}
       onNextLevel={handleNextLevel}
       onRetry={handleRetry}
+      onShowSelector={onShowSelector}
     />
   );
 }
@@ -64,7 +91,7 @@ function GameSessionInner({
 export function App() {
   return (
     <GameProvider>
-      <GameSession />
+      <GameRouter />
     </GameProvider>
   );
 }

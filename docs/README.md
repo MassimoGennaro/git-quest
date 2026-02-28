@@ -16,7 +16,8 @@ A browser-based learning game where players solve git challenges by typing real 
 - **Genre:** Puzzle / educational game
 - **Platform:** Browser (pure frontend MVP)
 - **Stack:** React 18, TypeScript (strict), Tailwind CSS, Vite, custom SVG graph renderer, in-browser git simulation engine
-- **MVP scope:** 4 levels (one per tier), 8 supported git commands (`add`, `branch`, `checkout`, `commit`, `log`, `merge`, `push`, `status`)
+- **Levels:** 20 levels across 4 difficulty tiers (Easy, Medium, Hard, Pro — 5 per tier)
+- **Supported git commands (14):** `add`, `branch`, `checkout`, `cherry-pick`, `commit`, `diff`, `log`, `merge`, `push`, `rebase`, `reflog`, `reset`, `stash`, `status`
 
 ## Getting Started (Development)
 
@@ -34,5 +35,9 @@ npx vitest run       # Run all tests once (CI mode)
 - [x] MVP: core simulation engine + SVG graph renderer + terminal + 4 levels
 - [x] Conflict system: three-panel merge editor (ours | result | theirs)
 - [x] Undo/retry + par-based scoring with localStorage persistence
-- [ ] Beta: all 4 tiers complete (20 levels)
+- [x] 6 new engine commands: diff, stash, reset, reflog, cherry-pick, rebase (regular + interactive)
+- [x] 20 levels across 4 tiers (Easy, Medium, Hard, Pro)
+- [x] Full-screen level selector with difficulty grouping and progress tracking
+- [x] Interactive rebase picker UI (pick / squash / drop)
+- [x] Enhanced progress persistence (stars + best move count per level)
 - [ ] v1: leaderboard + GitHub auth + community levels
