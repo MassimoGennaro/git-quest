@@ -193,15 +193,10 @@ function layoutGraph(
   // Assign orphaned commits (not reachable from any branch/HEAD) to a dedicated orphan lane.
   // Use a dashed/dimmed style lane at the far right.
   const orphanLane = nextLane; // one past the last branch lane
-  let hasOrphans = false;
   for (const commit of order) {
     if (!commitLane.has(commit.hash)) {
       commitLane.set(commit.hash, orphanLane);
-      hasOrphans = true;
     }
-  }
-  if (hasOrphans) {
-    nextLane++; // account for the orphan lane in width calculations
   }
 
   // Layout constants
